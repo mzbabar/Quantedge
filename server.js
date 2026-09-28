@@ -6,7 +6,10 @@ const cookieSession = require('cookie-session');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
 const db = require('./db');
+// Styles are inlined into every page so school/corporate web filters that break separate CSS requests can't unstyle the site.
+const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'), 'utf8');
 
 const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
 const ADMIN_EMAILS = (process.env.ADMIN_EMAIL || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
@@ -46,6 +49,7 @@ app.use(wrap(async (req, res, next) => {
   req.user = req.session.uid ? await db.get('users', req.session.uid) : null;
   res.locals.user = req.user;
   res.locals.site = SITE;
+  res.locals.inlineCss = INLINE_CSS;
   res.locals.flash = req.session.flash || null;
   req.session.flash = null;
   res.locals.csrf = req.session.csrf;
