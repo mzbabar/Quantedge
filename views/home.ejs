@@ -1,0 +1,120 @@
+<%- include('partials/header') %>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">GMAT Focus Edition · Quantitative Reasoning</p>
+      <h1>21 questions. 45 minutes. No calculator.<br><span class="accent">Let's make every minute count.</span></h1>
+      <p class="lead">Live, small-group coaching on Zoom for the GMAT Quant section. Start with a free 1-on-1 session — we'll diagnose where you're losing points and map a plan to your target score.</p>
+      <div class="cta-row">
+        <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
+        <a class="btn btn-ghost" href="#bootcamp">See the 4-week bootcamp</a>
+      </div>
+      <p class="small muted">30 minutes · No payment details needed</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat"><span class="num">21</span><span>Quant questions</span></div>
+      <div class="stat"><span class="num">45</span><span>minutes</span></div>
+      <div class="stat"><span class="num">~2:08</span><span>per question</span></div>
+      <div class="stat"><span class="num">60–90</span><span>section score</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="gmat-quant" class="section">
+  <div class="wrap">
+    <h2>What's on the GMAT Quant section</h2>
+    <p class="section-lead">The current GMAT (Focus Edition) has three 45-minute sections — Quantitative Reasoning, Verbal Reasoning and Data Insights — 64 questions in total, taken in any order you choose.</p>
+    <div class="grid-3">
+      <div class="card">
+        <h3>Format</h3>
+        <ul class="ticks">
+          <li>21 Problem Solving questions (multiple choice)</li>
+          <li>45 minutes — about 2 minutes 8 seconds each</li>
+          <li>Computer-adaptive: difficulty adjusts to your answers</li>
+          <li>No calculator allowed</li>
+          <li>You can review and change up to 3 answers per section</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Content tested</h3>
+        <ul class="ticks">
+          <li><strong>Arithmetic:</strong> number properties, fractions, percents, ratios</li>
+          <li><strong>Algebra:</strong> equations, inequalities, functions, exponents</li>
+          <li><strong>Word problems:</strong> rates, work, mixtures, interest</li>
+          <li><strong>Statistics &amp; counting:</strong> averages, sets, probability, combinatorics</li>
+          <li>Plane geometry was removed; Data Sufficiency moved to Data Insights</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Scoring</h3>
+        <ul class="ticks">
+          <li>Quant section score: 60–90</li>
+          <li>Total GMAT score: 205–805</li>
+          <li>All three sections weigh equally in your total</li>
+          <li>Unanswered questions cost you — pacing is a real skill</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section alt">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <div class="steps">
+      <div class="step"><span>1</span><h3>Create a free account</h3><p>Takes one minute. Tell us your test date and target score.</p></div>
+      <div class="step"><span>2</span><h3>Free 1-on-1 Zoom session</h3><p>We work a few timed questions together, spot your weak areas, and build a study plan.</p></div>
+      <div class="step"><span>3</span><h3>Join the bootcamp</h3><p>Four weeks of live classes, practice sets and direct support until test day.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="bootcamp" class="section">
+  <div class="wrap bootcamp">
+    <div>
+      <p class="eyebrow">4-week live bootcamp</p>
+      <h2>GMAT Quant Bootcamp</h2>
+      <p class="section-lead">A focused, structured program covering every Quant topic, built around timed practice and the no-calculator strategies that save minutes.</p>
+      <div class="weeks">
+        <div><strong>Week 1</strong> Number properties, arithmetic, mental math shortcuts</div>
+        <div><strong>Week 2</strong> Algebra, inequalities, functions, exponents &amp; roots</div>
+        <div><strong>Week 3</strong> Word problems: rates, work, mixtures, percents, ratios</div>
+        <div><strong>Week 4</strong> Statistics, counting &amp; probability, full timed sections, pacing plan</div>
+      </div>
+    </div>
+    <div class="price-card">
+      <div class="price"><%= site.bootcampPrice %></div>
+      <div class="muted">one-time · 4 weeks</div>
+      <ul class="ticks">
+        <li>8 live Zoom classes (2 per week)</li>
+        <li>Weekly timed practice sets with worked solutions</li>
+        <li>Class recordings in your student area</li>
+        <li>Ask-the-tutor questions answered between classes</li>
+        <li>Full-length Quant section review before test day</li>
+      </ul>
+      <a class="btn btn-block" href="<%= user ? '/dashboard#bootcamp' : '/register' %>">Register for the bootcamp</a>
+      <p class="small muted center">Not sure yet? <a href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Start with the free session.</a></p>
+    </div>
+  </div>
+</section>
+
+<section id="faq" class="section alt">
+  <div class="wrap narrow">
+    <h2>FAQ</h2>
+    <details><summary>How many math questions are on the GMAT?</summary><p>The Quantitative Reasoning section has 21 Problem Solving questions in 45 minutes. Data Insights (20 questions) also uses math skills — especially Data Sufficiency and table/graph questions.</p></details>
+    <details><summary>Is the free session really free?</summary><p>Yes. It's a 30-minute 1-on-1 Zoom call with no payment details and no obligation to join the bootcamp.</p></details>
+    <details><summary>Can I use a calculator?</summary><p>Not on Quant. An on-screen calculator is available only in Data Insights, so we train fast mental-math and estimation techniques.</p></details>
+    <details><summary>What if I miss a live class?</summary><p>Recordings and practice sets are posted to your secure student dashboard.</p></details>
+    <details><summary>When should I start?</summary><p>Ideally 6–10 weeks before your test date so you finish the bootcamp with time left for full practice tests.</p></details>
+  </div>
+</section>
+
+<section class="section cta-band">
+  <div class="wrap center">
+    <h2>Ready to raise your Quant score?</h2>
+    <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

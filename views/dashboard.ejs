@@ -1,0 +1,118 @@
+<%- include('partials/header') %>
+<%
+  const fmt = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const statusLabel = { requested: 'Requested — awaiting confirmation', scheduled: 'Scheduled', completed: 'Completed', cancelled: 'Cancelled', pending_payment: 'Registered — payment pending', active: 'Enrolled ✓' };
+%>
+<section class="section">
+  <div class="wrap">
+    <div class="dash-head">
+      <div>
+        <p class="eyebrow">Student area · private</p>
+        <h1>Hi, <%= user.name.split(' ')[0] %></h1>
+        <p class="muted">
+          <% if (user.testDate) { %>Test date: <strong><%= user.testDate %></strong><% } %>
+          <% if (user.targetScore) { %> · Target: <strong><%= user.targetScore %></strong><% } %>
+        </p>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Free session -->
+      <div class="card" id="free-session">
+        <h2>Free intro Zoom session</h2>
+        <% if (freeSession && freeSession.status !== 'cancelled') { %>
+          <p><span class="pill pill-<%= freeSession.status %>"><%= statusLabel[freeSession.status] %></span></p>
+          <% if (freeSession.scheduledFor) { %><p><strong>When:</strong> <%= freeSession.scheduledFor %></p><% } %>
+          <% if (freeSession.zoomLink) { %>
+            <a class="btn" href="<%= freeSession.zoomLink %>" target="_blank" rel="noopener">Join Zoom session</a>
+          <% } else { %>
+            <p class="muted">You asked for: <%= freeSession.preferred1.replace('T',' ') %><% if (freeSession.preferred2) { %> or <%= freeSession.preferred2.replace('T',' ') %><% } %> (<%= freeSession.timezone %>). Your tutor will confirm a time and your Zoom link will appear here.</p>
+          <% } %>
+        <% } else { %>
+          <p class="muted">30 minutes, 1-on-1. Pick two times that work for you.</p>
+          <form method="post" action="/free-session" class="form">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <div class="row2">
+              <label>First choice<input type="datetime-local" name="preferred1" required></label>
+              <label>Second choice<input type="datetime-local" name="preferred2"></label>
+            </div>
+            <label>Your time zone
+              <select name="timezone">
+                <option>Eastern (ET)</option><option>Central (CT)</option><option>Mountain (MT)</option><option>Pacific (PT)</option>
+                <option>UK (GMT/BST)</option><option>Central Europe (CET)</option><option>India (IST)</option><option>Pakistan (PKT)</option><option>Gulf (GST)</option><option>Other — see notes</option>
+              </select>
+            </label>
+            <label>What do you want help with? <span class="muted">(optional)</span><textarea name="notes" rows="3" placeholder="e.g. I run out of time on word problems"></textarea></label>
+            <button class="btn">Request my free session</button>
+          </form>
+        <% } %>
+      </div>
+
+      <!-- Bootcamp -->
+      <div class="card" id="bootcamp">
+        <h2>4-week Quant Bootcamp</h2>
+        <% if (enrollment && enrollment.status !== 'cancelled') { %>
+          <p><span class="pill pill-<%= enrollment.status %>"><%= statusLabel[enrollment.status] %></span></p>
+          <% if (enrollment.status === 'pending_payment') { %>
+            <p class="muted">Your seat is held. <% if (site.paymentLink) { %>Complete payment to confirm it.<% } else { %>We'll email payment instructions to <%= user.email %>.<% } %></p>
+            <% if (site.paymentLink) { %>
+              <form method="post" action="/enroll"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn">Pay <%= site.bootcampPrice %></button></form>
+            <% } %>
+          <% } else { %>
+            <p class="muted">You're in! Class links, recordings and practice sets appear under "From your tutor" below.</p>
+          <% } %>
+        <% } else { %>
+          <p class="price-inline"><%= site.bootcampPrice %> <span class="muted">· 8 live classes over 4 weeks</span></p>
+          <form method="post" action="/enroll" class="form">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <label>Preferred class time
+              <select name="cohort">
+                <option>Weekday evenings (ET)</option>
+                <option>Weekend mornings (ET)</option>
+                <option>Flexible</option>
+              </select>
+            </label>
+            <button class="btn">Register for the bootcamp</button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Tutor posts -->
+    <div class="card" id="updates">
+      <h2>From your tutor</h2>
+      <% if (!posts.length) { %>
+        <p class="muted">Announcements, class links and study resources will show up here.</p>
+      <% } %>
+      <% posts.forEach(p => { %>
+        <article class="post">
+          <div class="post-meta"><span class="tag tag-<%= p.kind %>"><%= p.kind %></span><% if (p.audience === 'bootcamp') { %><span class="tag">bootcamp</span><% } %> <span class="muted small"><%= fmt(p.createdAt) %></span></div>
+          <h3><%= p.title %></h3>
+          <% if (p.body) { %><p class="prewrap"><%= p.body %></p><% } %>
+          <% if (p.link) { %><a href="<%= p.link %>" target="_blank" rel="noopener">Open link →</a><% } %>
+        </article>
+      <% }) %>
+    </div>
+
+    <!-- Ask a question -->
+    <div class="card" id="ask">
+      <h2>Ask your tutor</h2>
+      <form method="post" action="/questions" class="form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <label>Topic
+          <select name="topic"><option>Arithmetic</option><option>Algebra</option><option>Word problems</option><option>Statistics &amp; probability</option><option>Strategy / timing</option><option>Other</option></select>
+        </label>
+        <label>Your question<textarea name="body" rows="3" required placeholder="Paste the problem and where you got stuck"></textarea></label>
+        <button class="btn btn-ghost">Send question</button>
+      </form>
+      <% questions.forEach(q => { %>
+        <div class="qa">
+          <div class="small muted"><%= q.topic %> · <%= fmt(q.createdAt) %></div>
+          <p class="prewrap"><strong>You:</strong> <%= q.body %></p>
+          <% if (q.reply) { %><p class="prewrap reply"><strong>Tutor:</strong> <%= q.reply %></p><% } else { %><p class="small muted">Awaiting reply…</p><% } %>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

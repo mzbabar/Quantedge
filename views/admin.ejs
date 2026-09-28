@@ -1,0 +1,90 @@
+<%- include('partials/header') %>
+<% const fmt = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); %>
+<section class="section">
+  <div class="wrap">
+    <p class="eyebrow">Tutor admin</p>
+    <h1>Dashboard</h1>
+    <div class="kpis">
+      <div class="kpi"><span class="num"><%= students.length %></span>students</div>
+      <div class="kpi"><span class="num"><%= sessions.filter(s => s.status === 'requested').length %></span>free sessions to schedule</div>
+      <div class="kpi"><span class="num"><%= enrollments.filter(e => e.status === 'pending_payment').length %></span>bootcamp pending payment</div>
+      <div class="kpi"><span class="num"><%= enrollments.filter(e => e.status === 'active').length %></span>bootcamp enrolled</div>
+      <div class="kpi"><span class="num"><%= questions.filter(q => !q.reply).length %></span>unanswered questions</div>
+    </div>
+
+    <div class="card" id="sessions">
+      <h2>Free session requests</h2>
+      <% if (!sessions.length) { %><p class="muted">None yet.</p><% } %>
+      <% sessions.forEach(s => { %>
+        <form method="post" action="/admin/session/<%= s.id %>" class="admin-row">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="who"><strong><%= s.student.name %></strong><br><span class="small muted"><%= s.student.email %> · asked <%= fmt(s.createdAt) %></span>
+            <div class="small">Prefers: <%= s.preferred1.replace('T',' ') %><%= s.preferred2 ? ' / ' + s.preferred2.replace('T',' ') : '' %> (<%= s.timezone %>)</div>
+            <% if (s.notes) { %><div class="small muted prewrap">“<%= s.notes %>”</div><% } %>
+          </div>
+          <input name="scheduledFor" placeholder="Confirmed time, e.g. Oct 3, 7pm ET" value="<%= s.scheduledFor %>">
+          <input name="zoomLink" type="url" placeholder="https://zoom.us/j/..." value="<%= s.zoomLink %>">
+          <select name="status"><% ['requested','scheduled','completed','cancelled'].forEach(o => { %><option <%= s.status === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
+          <button class="btn btn-sm">Save</button>
+        </form>
+      <% }) %>
+    </div>
+
+    <div class="card" id="enrollments">
+      <h2>Bootcamp registrations</h2>
+      <% if (!enrollments.length) { %><p class="muted">None yet.</p><% } %>
+      <% enrollments.forEach(e => { %>
+        <form method="post" action="/admin/enrollment/<%= e.id %>" class="admin-row">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="who"><strong><%= e.student.name %></strong><br><span class="small muted"><%= e.student.email %> · <%= e.cohort %> · <%= fmt(e.createdAt) %></span></div>
+          <select name="status"><% ['pending_payment','active','cancelled'].forEach(o => { %><option <%= e.status === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
+          <button class="btn btn-sm">Save</button>
+        </form>
+      <% }) %>
+    </div>
+
+    <div class="card" id="posts">
+      <h2>Share with students</h2>
+      <form method="post" action="/admin/post" class="form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="row2">
+          <label>Type<select name="kind"><option value="announcement">Announcement</option><option value="class">Class / Zoom link</option><option value="resource">Resource / practice set</option></select></label>
+          <label>Who sees it<select name="audience"><option value="all">All students</option><option value="bootcamp">Enrolled bootcamp students only</option></select></label>
+        </div>
+        <label>Title<input name="title" required maxlength="150"></label>
+        <label>Details<textarea name="body" rows="3"></textarea></label>
+        <label>Link <span class="muted">(Zoom, Google Drive, PDF…)</span><input name="link" type="url"></label>
+        <button class="btn">Post</button>
+      </form>
+      <% posts.forEach(p => { %>
+        <div class="admin-row">
+          <div class="who"><strong><%= p.title %></strong><br><span class="small muted"><%= p.kind %> · <%= p.audience %> · <%= fmt(p.createdAt) %></span></div>
+          <form method="post" action="/admin/post/<%= p.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm btn-ghost">Delete</button></form>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="card" id="questions">
+      <h2>Student questions</h2>
+      <% if (!questions.length) { %><p class="muted">None yet.</p><% } %>
+      <% questions.forEach(q => { %>
+        <form method="post" action="/admin/question/<%= q.id %>/reply" class="qa">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <div class="small muted"><strong><%= q.student.name %></strong> · <%= q.topic %> · <%= fmt(q.createdAt) %></div>
+          <p class="prewrap"><%= q.body %></p>
+          <textarea name="reply" rows="2" placeholder="Your reply"><%= q.reply %></textarea>
+          <button class="btn btn-sm">Save reply</button>
+        </form>
+      <% }) %>
+    </div>
+
+    <div class="card">
+      <h2>Students</h2>
+      <div class="table-wrap"><table>
+        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Test date</th><th>Target</th><th>Joined</th></tr>
+        <% students.forEach(s => { %><tr><td><%= s.name %></td><td><%= s.email %></td><td><%= s.phone %></td><td><%= s.testDate %></td><td><%= s.targetScore %></td><td><%= fmt(s.createdAt) %></td></tr><% }) %>
+      </table></div>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

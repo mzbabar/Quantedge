@@ -1,0 +1,24 @@
+<%- include('partials/header') %>
+<section class="section">
+  <div class="wrap auth">
+    <h1>Create your account</h1>
+    <p class="muted">Your account gives you a private student area to book your free Zoom session, register for the bootcamp, and get class materials.</p>
+    <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+    <form method="post" action="/register" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="next" value="<%= typeof next !== 'undefined' ? next : '' %>">
+      <label>Full name<input name="name" required maxlength="100" value="<%= form.name || '' %>" autocomplete="name"></label>
+      <label>Email<input type="email" name="email" required value="<%= form.email || '' %>" autocomplete="email"></label>
+      <label>Phone <span class="muted">(optional)</span><input name="phone" value="<%= form.phone || '' %>" autocomplete="tel"></label>
+      <div class="row2">
+        <label>Planned test date<input type="date" name="testDate" value="<%= form.testDate || '' %>"></label>
+        <label>Target total score<input name="targetScore" placeholder="e.g. 655" value="<%= form.targetScore || '' %>"></label>
+      </div>
+      <label>Password <span class="muted">(8+ characters)</span><input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+      <label>Confirm password<input type="password" name="confirm" required minlength="8" autocomplete="new-password"></label>
+      <button class="btn btn-block">Create account</button>
+    </form>
+    <p class="center muted">Already have an account? <a href="/login">Log in</a></p>
+  </div>
+</section>
+<%- include('partials/footer') %>
