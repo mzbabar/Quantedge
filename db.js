@@ -11,11 +11,13 @@ let backend;
 
 if (process.env.DATABASE_URL) {
   const { Pool } = require('pg');
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
-    max: 3,
-  });
+  // Use full certificate verification for hosted databases (Neon etc.) and say so explicitly,
+  // which also silences pg's "sslmode=require is treated as verify-full" warning.
+  const dbUrl = new URL(process.env.DATABASE_URL);
+  const isLocal = /^(localhost|127\.0\.0\.1|::1)$/.test(dbUrl.hostname);
+  if (isLocal) dbUrl.searchParams.delete('sslmode');
+  else dbUrl.searchParams.set('sslmode', 'verify-full');
+  const pool = new Pool({ connectionString: dbUrl.toString(), max: 3 });
   let ready;
   const init = () => ready || (ready = pool.query(`
     CREATE TABLE IF NOT EXISTS docs (
