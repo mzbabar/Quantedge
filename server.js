@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const db = require('./db');
+const QUIZ = require('./quiz-data');
 // Styles are inlined into every page so school/corporate web filters that break separate CSS requests can't unstyle the site.
 const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'), 'utf8');
 
@@ -120,6 +121,46 @@ app.post('/login', authLimiter, wrap(async (req, res) => {
 }));
 app.post('/logout', (req, res) => { req.session = null; res.redirect('/'); });
 
+// ---------- free Quant score check ----------
+// A rough, practice-only estimate on the 60–90 Quant scale. Not an official GMAT score.
+function estimateBand(correct) {
+  if (correct >= 11) return { low: 85, high: 90, label: 'Excellent' };
+  if (correct >= 9) return { low: 80, high: 85, label: 'Strong' };
+  if (correct >= 7) return { low: 76, high: 81, label: 'Solid' };
+  if (correct >= 5) return { low: 72, high: 77, label: 'Developing' };
+  if (correct >= 3) return { low: 66, high: 72, label: 'Building' };
+  return { low: 60, high: 66, label: 'Starting out' };
+}
+const quizLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: true, legacyHeaders: false });
+
+app.get('/quiz', (req, res) => res.render('quiz', { title: 'Free Quant score check', questions: QUIZ }));
+
+app.post('/quiz', quizLimiter, wrap(async (req, res) => {
+  const answers = QUIZ.map(q => {
+    const v = parseInt(req.body[q.id], 10);
+    return Number.isInteger(v) && v >= 0 && v < q.choices.length ? v : null;
+  });
+  const correct = answers.filter((a, i) => a === QUIZ[i].answer).length;
+  const seconds = Math.min(Math.max(parseInt(req.body.elapsed, 10) || 0, 0), 4 * 3600);
+  const consent = req.body.consent === 'yes';
+  const email = consent && isEmail(clean(req.body.email, 200)) ? clean(req.body.email, 200).toLowerCase() : '';
+  const attempt = await db.insert('quiz_attempts', {
+    id: db.id(), userId: req.user ? req.user.id : null,
+    name: email ? clean(req.body.name, 100) : '', email,
+    answers, correct, total: QUIZ.length, seconds, band: estimateBand(correct),
+    missedTopics: QUIZ.filter((q, i) => answers[i] !== q.answer).map(q => q.concept),
+    createdAt: db.now(),
+  });
+  res.redirect(`/quiz/result/${attempt.id}`);
+}));
+
+app.get('/quiz/result/:id', wrap(async (req, res, next) => {
+  if (!/^[0-9a-f-]{36}$/.test(req.params.id)) return next();
+  const attempt = await db.get('quiz_attempts', req.params.id);
+  if (!attempt) return next();
+  res.render('quiz-result', { title: 'Your Quant score check', attempt, questions: QUIZ });
+}));
+
 // ---------- student area ----------
 app.get('/dashboard', requireAuth, wrap(async (req, res) => {
   const [enrollment] = await db.where('enrollments', 'userId', req.user.id);
@@ -127,7 +168,8 @@ app.get('/dashboard', requireAuth, wrap(async (req, res) => {
   const active = (enrollment && enrollment.status === 'active') || req.user.role === 'admin';
   const posts = (await db.all('posts')).filter(p => p.audience === 'all' || (p.audience === 'bootcamp' && active));
   const questions = await db.where('questions', 'userId', req.user.id);
-  res.render('dashboard', { title: 'My dashboard', enrollment, freeSession, posts, questions });
+  const [lastQuiz] = await db.where('quiz_attempts', 'userId', req.user.id);
+  res.render('dashboard', { title: 'My dashboard', enrollment, freeSession, posts, questions, lastQuiz });
 }));
 
 app.post('/free-session', requireAuth, wrap(async (req, res) => {
@@ -178,6 +220,7 @@ app.get('/admin', requireAuth, requireAdmin, wrap(async (req, res) => {
     enrollments: (await db.all('enrollments')).map(withStudent),
     posts: await db.all('posts'),
     questions: (await db.all('questions')).map(withStudent),
+    quizAttempts: await db.all('quiz_attempts'),
   });
 }));
 app.post('/admin/session/:id', requireAuth, requireAdmin, wrap(async (req, res) => {
