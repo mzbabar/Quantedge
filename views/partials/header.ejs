@@ -14,10 +14,10 @@
     <nav>
       <% if (path === '/') { %>
         <a href="#gmat-quant">The Quant section</a>
-        <a href="#samples">Sample questions</a>
         <a href="#bootcamp">Bootcamp</a>
         <a href="#faq">FAQ</a>
       <% } %>
+      <a href="/quiz">Free score check</a>
       <% if (user) { %>
         <% if (user.role === 'admin') { %><a href="/admin">Admin</a><% } %>
         <a href="/dashboard">Dashboard</a>
