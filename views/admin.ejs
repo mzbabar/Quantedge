@@ -5,6 +5,7 @@
     <p class="eyebrow">Tutor admin</p>
     <h1>Dashboard</h1>
     <div class="kpis">
+      <div class="kpi"><span class="num"><%= quizAttempts.length %></span>score checks taken</div>
       <div class="kpi"><span class="num"><%= students.length %></span>students</div>
       <div class="kpi"><span class="num"><%= sessions.filter(s => s.status === 'requested').length %></span>free sessions to schedule</div>
       <div class="kpi"><span class="num"><%= enrollments.filter(e => e.status === 'pending_payment').length %></span>bootcamp pending payment</div>
@@ -76,6 +77,27 @@
           <button class="btn btn-sm">Save reply</button>
         </form>
       <% }) %>
+    </div>
+
+    <div class="card" id="quiz">
+      <h2>Quant score check results</h2>
+      <p class="small muted">Emails appear only when the visitor ticked the consent box. Follow up with an invite to the free session.</p>
+      <% if (!quizAttempts.length) { %><p class="muted">None yet.</p><% } else { %>
+      <div class="table-wrap"><table>
+        <tr><th>Date</th><th>Name</th><th>Email / account</th><th>Score</th><th>Estimate</th><th>Time</th><th>Missed topics</th></tr>
+        <% quizAttempts.forEach(q => { const acct = q.userId && students.concat([]).find(s => s.id === q.userId); %>
+        <tr>
+          <td><%= fmt(q.createdAt) %></td>
+          <td><%= q.name || (acct ? acct.name : '') %></td>
+          <td><%= q.email || (acct ? acct.email + ' (student)' : 'anonymous') %></td>
+          <td><a href="/quiz/result/<%= q.id %>"><%= q.correct %>/<%= q.total %></a></td>
+          <td><%= q.band.low %>–<%= q.band.high %></td>
+          <td><%= q.seconds ? Math.floor(q.seconds/60) + 'm' : '—' %></td>
+          <td style="white-space:normal;min-width:260px"><%= q.missedTopics.join(', ') %></td>
+        </tr>
+        <% }) %>
+      </table></div>
+      <% } %>
     </div>
 
     <div class="card">

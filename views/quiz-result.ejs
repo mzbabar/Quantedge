@@ -1,0 +1,84 @@
+<%- include('partials/header') %>
+<%
+  const L = 'ABCDE';
+  const a = attempt;
+  const mm = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const perQ = a.seconds ? Math.round(a.seconds / a.total) : 0;
+  // Group the topics the student missed into the main GMAT areas.
+  const weak = questions.filter((q, i) => a.answers[i] !== q.answer);
+%>
+<section class="section quiz-intro">
+  <div class="wrap narrow">
+    <p class="eyebrow">Your Quant score check</p>
+    <div class="result-hero">
+      <div class="result-score">
+        <span class="num"><%= a.correct %>/<%= a.total %></span>
+        <span>correct</span>
+      </div>
+      <div class="result-band">
+        <span class="small">Practice estimate</span>
+        <span class="num"><%= a.band.low %>–<%= a.band.high %></span>
+        <span class="small">Quant section (scale 60–90) · <%= a.band.label %></span>
+      </div>
+      <% if (a.seconds >= 30) { %>
+      <div class="result-band">
+        <span class="small">Your pace</span>
+        <span class="num"><%= mm(perQ) %></span>
+        <span class="small">per question (test day: 2:08) · total <%= mm(a.seconds) %></span>
+      </div>
+      <% } %>
+    </div>
+    <p class="small muted">The score range is a rough indicator from 12 practice questions, not an official GMAT score. The real exam is adaptive, has 21 questions, and is scored by GMAC.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow">
+    <% if (weak.length) { %>
+    <h2>Topics to work on</h2>
+    <div class="weak-list">
+      <% weak.forEach(q => { %><span class="tag tag-announcement"><%= q.concept %></span><% }) %>
+    </div>
+    <% } else { %>
+    <h2>Perfect score!</h2>
+    <p>You're ready for harder material. Our bootcamp's later weeks focus on high-difficulty questions and pacing.</p>
+    <% } %>
+
+    <div class="card result-cta">
+      <div>
+        <h3>Want a plan built around these results?</h3>
+        <p class="muted">In a free 30-minute Zoom session we'll go through the questions you missed and map a study plan to your target score.</p>
+      </div>
+      <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free session</a>
+    </div>
+
+    <h2>Answers &amp; step-by-step solutions</h2>
+    <% questions.forEach((q, i) => {
+         const mine = a.answers[i]; const ok = mine === q.answer; %>
+    <article class="card quiz-q <%= ok ? 'is-right' : 'is-wrong' %>">
+      <div class="sample-meta">
+        <span class="tag <%= ok ? 'tag-resource' : 'tag-announcement' %>"><%= ok ? 'Correct' : (mine === null ? 'Not answered' : 'Incorrect') %></span>
+        <span class="small muted">Question <%= i + 1 %> · <%= q.topic %></span>
+      </div>
+      <p class="sample-q"><%= q.q %></p>
+      <ol class="choices">
+        <% q.choices.forEach((c, k) => { %>
+        <li class="<%= k === q.answer ? 'choice-correct' : (k === mine ? 'choice-mine' : '') %>">
+          <span class="letter"><%= L[k] %></span><%= c %>
+          <% if (k === q.answer) { %><strong class="choice-note">Correct answer</strong><% } else if (k === mine) { %><strong class="choice-note">Your answer</strong><% } %>
+        </li>
+        <% }) %>
+      </ol>
+      <details class="solution" <%= ok ? '' : 'open' %>>
+        <summary>Step-by-step solution</summary>
+        <div class="concept"><strong>Concept: <%= q.concept %></strong><br><%= q.idea %><br><em><%= q.formula %></em></div>
+        <ol class="sol-steps"><% q.steps.forEach(st => { %><li><%= st %></li><% }) %></ol>
+        <p class="tip"><strong><%= q.tipLabel %>:</strong> <%= q.tip %></p>
+      </details>
+    </article>
+    <% }) %>
+
+    <p class="center"><a href="/quiz">Retake the score check</a> · <a href="/#bootcamp">See the 4-week bootcamp</a></p>
+  </div>
+</section>
+<%- include('partials/footer') %>

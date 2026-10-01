@@ -8,7 +8,7 @@
       <p class="lead">Live, small-group coaching on Zoom for the GMAT Quant section. Start with a free 1-on-1 session — we'll diagnose where you're losing points and map a plan to your target score.</p>
       <div class="cta-row">
         <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
-        <a class="btn btn-ghost" href="#bootcamp">See the 4-week bootcamp</a>
+        <a class="btn btn-ghost" href="/quiz">Take the free Quant score check</a>
       </div>
       <p class="small muted">30 minutes · No payment details needed</p>
     </div>
@@ -111,6 +111,10 @@
         </details>
       </article>
     <% }) %>
+    </div>
+    <div class="quiz-cta-band">
+      <div><h3>Ready for 12 more?</h3><p>Take the free Quant score check: get a practice score range, your weak topics, and full solutions.</p></div>
+      <a class="btn" href="/quiz">Start the score check</a>
     </div>
     <p class="center sample-cta">Want 24 more like these, with live walkthroughs? <a href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book your free Zoom session →</a></p>
   </div>

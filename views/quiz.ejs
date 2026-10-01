@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+<% const L = 'ABCDE'; %>
+<section class="section quiz-intro">
+  <div class="wrap narrow">
+    <p class="eyebrow">Free · 12 questions · about 25 minutes</p>
+    <h1>Quant score check</h1>
+    <p class="section-lead">Twelve original GMAT-style Quant questions across arithmetic, algebra, word problems, statistics and counting. Work without a calculator, keep scratch paper handy, and aim for about 2 minutes per question. You'll get a practice score range, your weak topics, and a step-by-step solution for every question.</p>
+    <div class="quiz-facts">
+      <span>No sign-up needed</span><span>No calculator</span><span>Real GMAT pacing: 2:08 per question</span>
+    </div>
+  </div>
+</section>
+
+<section class="section quiz-body">
+  <div class="wrap narrow">
+    <form method="post" action="/quiz" id="quiz-form" class="quiz-form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="elapsed" id="elapsed" value="0">
+      <div class="quiz-bar" id="quiz-bar" hidden>
+        <span id="quiz-timer">0:00</span>
+        <span id="quiz-progress">0 of <%= questions.length %> answered</span>
+      </div>
+
+      <% questions.forEach((q, i) => { %>
+      <fieldset class="card quiz-q" id="<%= q.id %>">
+        <legend class="quiz-num">Question <%= i + 1 %> of <%= questions.length %></legend>
+        <p class="small muted"><%= q.topic %></p>
+        <p class="sample-q"><%= q.q %></p>
+        <div class="quiz-choices">
+          <% q.choices.forEach((c, k) => { %>
+          <label class="quiz-choice">
+            <input type="radio" name="<%= q.id %>" value="<%= k %>">
+            <span class="letter"><%= L[k] %></span>
+            <span><%= c %></span>
+          </label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <% }) %>
+
+      <div class="card quiz-submit">
+        <h3>Get your results</h3>
+        <p class="muted">Unanswered questions count as wrong, just like on test day.</p>
+        <% if (!user) { %>
+        <div class="row2">
+          <label>First name <span class="muted">(optional)</span><input name="name" maxlength="100" autocomplete="given-name"></label>
+          <label>Email <span class="muted">(optional)</span><input type="email" name="email" autocomplete="email"></label>
+        </div>
+        <label class="consent"><input type="checkbox" name="consent" value="yes"> Email me my results and occasional GMAT Quant tips. You can unsubscribe any time.</label>
+        <% } else { %>
+        <p class="small">Your result will be saved to your dashboard.</p>
+        <% } %>
+        <button class="btn btn-block">See my score &amp; solutions</button>
+      </div>
+    </form>
+  </div>
+</section>
+<script src="/quiz.js" defer></script>
+<%- include('partials/footer') %>

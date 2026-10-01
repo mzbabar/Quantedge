@@ -78,6 +78,18 @@
       </div>
     </div>
 
+    <!-- Quant score check -->
+    <div class="card" id="score-check">
+      <h2>Quant score check</h2>
+      <% if (lastQuiz) { %>
+        <p>Last result: <strong><%= lastQuiz.correct %>/<%= lastQuiz.total %></strong> · practice estimate <strong><%= lastQuiz.band.low %>–<%= lastQuiz.band.high %></strong> · <%= fmt(lastQuiz.createdAt) %></p>
+        <a class="btn btn-ghost" href="/quiz/result/<%= lastQuiz.id %>">Review solutions</a> <a href="/quiz" style="margin-left:12px">Retake</a>
+      <% } else { %>
+        <p class="muted">12 timed questions with a practice score range, your weak topics and full solutions.</p>
+        <a class="btn" href="/quiz">Take the free score check</a>
+      <% } %>
+    </div>
+
     <!-- Tutor posts -->
     <div class="card" id="updates">
       <h2>From your tutor</h2>
