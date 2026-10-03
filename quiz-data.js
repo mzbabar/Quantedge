@@ -1,4 +1,4 @@
-// Free Quant score check: 12 original GMAT-style questions (QuantEdge Practice Set 2). Answers verified.
+// Free Quant score check: 12 original GMAT-style questions (MZB Academy Practice Set 2). Answers verified.
 module.exports = [
   {
     "id": "q1",

@@ -1,4 +1,4 @@
-# QuantEdge GMAT — website
+# MZB Academy — website
 
 Marketing site + student login for a GMAT Quant tutoring business.
 
@@ -23,7 +23,7 @@ Built with Node.js + Express + EJS. Data is stored in Postgres (required on Verc
    | `SESSION_SECRET` | a long random string (e.g. from https://www.random.org/strings or `openssl rand -hex 32`) |
    | `ADMIN_EMAIL` | the email you'll use as the tutor (comma-separate for several) |
    | `CONTACT_EMAIL` | the email shown on the site |
-   | `SITE_NAME` | optional, defaults to `QuantEdge GMAT` |
+   | `SITE_NAME` | optional, defaults to `MZB Academy` |
    | `BOOTCAMP_PRICE` | optional, defaults to `$349` |
    | `PAYMENT_LINK` | optional Stripe Payment Link (see below) |
 
