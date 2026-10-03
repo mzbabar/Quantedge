@@ -1,15 +1,17 @@
 <%- include('partials/header') %>
 <section class="section">
   <div class="wrap auth">
+    <div class="auth-mark"><%- include('partials/mark') %></div>
     <h1>Log in</h1>
     <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
     <form method="post" action="/login" class="form">
       <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <input type="hidden" name="next" value="<%= typeof next !== 'undefined' ? next : '' %>">
       <label>Email<input type="email" name="email" required value="<%= email %>" autocomplete="email"></label>
       <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
       <button class="btn btn-block">Log in</button>
     </form>
-    <p class="center muted">New here? <a href="/register">Create an account</a></p>
+    <p class="center muted">New here? <a href="/register<%= typeof next !== 'undefined' && next ? '?next=' + next : '' %>">Create an account</a></p>
     <p class="center small muted">Forgot your password? Email <a href="mailto:<%= site.contactEmail %>"><%= site.contactEmail %></a> and we'll reset it.</p>
   </div>
 </section>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practice test · <%= site.name %></title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta name="robots" content="noindex">
+  <style><%- inlineCss %></style>
+</head>
+<body class="exam-body">
+<% const L = 'ABCDE'; %>
+<form method="post" action="/practice-test/<%= attempt.id %>/submit" id="exam" class="exam"
+      data-remaining="<%= remaining %>" data-attempt="<%= attempt.id %>" data-total="<%= questions.length %>">
+  <input type="hidden" name="_csrf" value="<%= csrf %>">
+  <input type="hidden" name="times" id="times" value="[]">
+  <input type="hidden" name="edits" id="edits" value="0">
+
+  <header class="exam-bar">
+    <div class="exam-brand"><%- include('partials/mark', { m: '#ffffff' }) %><span>Quantitative Reasoning</span></div>
+    <div class="exam-status">
+      <span id="exam-count">21 questions</span>
+      <span class="exam-timer" id="exam-timer" title="Time remaining"><%= Math.floor(remaining / 60) %>:<%= String(remaining % 60).padStart(2, '0') %></span>
+    </div>
+  </header>
+
+  <noscript>
+    <div class="wrap narrow"><div class="flash flash-info">Your browser is blocking scripts, so the questions are shown all at once without the on-screen timer. The 45-minute limit is still recorded when you submit.</div></div>
+  </noscript>
+
+  <main class="exam-main">
+    <% questions.forEach((q, i) => { %>
+    <fieldset class="exam-q" id="<%= q.id %>" data-index="<%= i %>">
+      <legend class="exam-qnum">Question <%= i + 1 %> of <%= questions.length %></legend>
+      <p class="exam-text"><%= q.q %></p>
+      <div class="quiz-choices">
+        <% q.choices.forEach((c, k) => { %>
+        <label class="quiz-choice">
+          <input type="radio" name="<%= q.id %>" value="<%= k %>">
+          <span class="letter"><%= L[k] %></span><span><%= c %></span>
+        </label>
+        <% }) %>
+      </div>
+    </fieldset>
+    <% }) %>
+
+    <section class="exam-review" id="exam-review" hidden>
+      <h2>Review &amp; edit</h2>
+      <p class="muted">Click any question to revisit it. You can change up to <b>3</b> answers. Edits left: <b id="edits-left">3</b>. The clock is still running.</p>
+      <div class="review-grid" id="review-grid"></div>
+      <div class="review-legend small muted"><span class="rv-dot rv-bm"></span> Bookmarked <span class="rv-dot rv-ed"></span> Edited <span class="rv-dot rv-un"></span> Unanswered</div>
+    </section>
+  </main>
+
+  <footer class="exam-foot">
+    <button type="button" class="btn btn-ghost btn-sm" id="btn-bookmark" hidden>Bookmark</button>
+    <span class="exam-hint small" id="exam-hint"></span>
+    <button type="button" class="btn" id="btn-next" hidden>Next</button>
+    <button type="button" class="btn" id="btn-review" hidden>Back to review</button>
+    <button type="submit" class="btn" id="btn-submit">Submit test</button>
+  </footer>
+</form>
+<script src="/test.js" defer></script>
+</body>
+</html>

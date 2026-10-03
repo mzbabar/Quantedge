@@ -1,6 +1,7 @@
 <%- include('partials/header') %>
 <section class="section">
   <div class="wrap auth">
+    <div class="auth-mark"><%- include('partials/mark') %></div>
     <h1>Create your account</h1>
     <p class="muted">Your account gives you a private student area to book your free Zoom session, register for the bootcamp, and get class materials.</p>
     <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>

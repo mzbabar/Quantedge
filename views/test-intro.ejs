@@ -1,0 +1,69 @@
+<%- include('partials/header') %>
+<% const fmt = (iso) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); %>
+<section class="hero test-hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">Free · Full-length · Real test conditions</p>
+      <h1>GMAT Quant practice test</h1>
+      <p class="lead">A complete Quantitative Reasoning section: 21 questions in 45 minutes, one question at a time, no calculator. At the end you get a practice score range, a breakdown by topic, your pacing on every question, and step-by-step solutions.</p>
+      <div class="cta-row">
+        <% if (!user) { %>
+          <a class="btn" href="/register?next=test">Create a free account to start</a>
+          <a class="btn btn-ghost" href="/login?next=test">I have an account</a>
+        <% } else if (inProgress) { %>
+          <a class="btn" href="/practice-test/<%= inProgress.id %>">Resume my test (timer is running)</a>
+        <% } else { %>
+          <form method="post" action="/practice-test/start" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrf %>">
+            <button class="btn">Start the 45-minute test</button>
+          </form>
+        <% } %>
+      </div>
+      <p class="small muted">Your results are saved to your student dashboard.</p>
+    </div>
+    <div class="stat-card">
+      <div class="stat"><span class="num"><%= total %></span><span>questions</span></div>
+      <div class="stat"><span class="num">45:00</span><span>time limit</span></div>
+      <div class="stat"><span class="num">3</span><span>answer edits at the end</span></div>
+      <div class="stat"><span class="num">60–90</span><span>score range estimate</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="grid-2">
+      <div class="card">
+        <h3>Test rules (same as the real GMAT)</h3>
+        <ul class="ticks">
+          <li>One question at a time. Choose an answer to move on.</li>
+          <li>Bookmark any question you want to revisit.</li>
+          <li>When you reach the end, review your answers and change up to 3 of them.</li>
+          <li>The clock keeps running during review. At 0:00 the test submits itself.</li>
+          <li>No calculator. Have scratch paper and a pencil ready.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>What's covered</h3>
+        <ul class="ticks">
+          <% categories.forEach(c => { %><li><%= c %></li><% }) %>
+        </ul>
+        <p class="small muted">All questions are original, written in GMAT style by MZB Academy. This test isn't adaptive like the real exam, so treat the score as a practice estimate, not an official GMAT score.</p>
+      </div>
+    </div>
+
+    <% if (attempts.length) { %>
+    <div class="card">
+      <h3>Your past attempts</h3>
+      <div class="table-wrap"><table>
+        <tr><th>Date</th><th>Score</th><th>Practice estimate</th><th>Time used</th><th></th></tr>
+        <% attempts.forEach(a => { %>
+        <tr><td><%= fmt(a.completedAt) %></td><td><%= a.correct %>/<%= a.total %></td><td><%= a.estimate.low %>–<%= a.estimate.high %></td>
+            <td><%= Math.floor(a.seconds / 60) %>m <%= a.seconds % 60 %>s</td><td><a href="/practice-test/<%= a.id %>/results">Review</a></td></tr>
+        <% }) %>
+      </table></div>
+    </div>
+    <% } %>
+  </div>
+</section>
+<%- include('partials/footer') %>

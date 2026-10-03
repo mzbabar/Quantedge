@@ -5,6 +5,7 @@
     <p class="eyebrow">Tutor admin</p>
     <h1>Dashboard</h1>
     <div class="kpis">
+      <div class="kpi"><span class="num"><%= testAttempts.length %></span>practice tests taken</div>
       <div class="kpi"><span class="num"><%= quizAttempts.length %></span>score checks taken</div>
       <div class="kpi"><span class="num"><%= students.length %></span>students</div>
       <div class="kpi"><span class="num"><%= sessions.filter(s => s.status === 'requested').length %></span>free sessions to schedule</div>
@@ -79,6 +80,25 @@
       <% }) %>
     </div>
 
+    <div class="card" id="tests">
+      <h2>Practice test results</h2>
+      <% if (!testAttempts.length) { %><p class="muted">None yet.</p><% } else { %>
+      <div class="table-wrap"><table>
+        <tr><th>Date</th><th>Student</th><th>Score</th><th>Estimate</th><th>Time</th><th>Weakest topic</th></tr>
+        <% testAttempts.forEach(t => { const st = students.find(s => s.id === t.userId); const w = t.byCategory.slice().sort((x, y) => x.correct / x.total - y.correct / y.total)[0]; %>
+        <tr>
+          <td><%= fmt(t.completedAt) %></td>
+          <td><%= st ? st.name + ' · ' + st.email : '(tutor)' %></td>
+          <td><a href="/practice-test/<%= t.id %>/results"><%= t.correct %>/<%= t.total %></a></td>
+          <td><%= t.estimate.low %>–<%= t.estimate.high %></td>
+          <td><%= Math.floor(t.seconds / 60) %>m</td>
+          <td><%= w.category %> (<%= w.correct %>/<%= w.total %>)</td>
+        </tr>
+        <% }) %>
+      </table></div>
+      <% } %>
+    </div>
+
     <div class="card" id="quiz">
       <h2>Quant score check results</h2>
       <p class="small muted">Emails appear only when the visitor ticked the consent box. Follow up with an invite to the free session.</p>
@@ -103,8 +123,8 @@
     <div class="card">
       <h2>Students</h2>
       <div class="table-wrap"><table>
-        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Test date</th><th>Target</th><th>Joined</th></tr>
-        <% students.forEach(s => { %><tr><td><%= s.name %></td><td><%= s.email %></td><td><%= s.phone %></td><td><%= s.testDate %></td><td><%= s.targetScore %></td><td><%= fmt(s.createdAt) %></td></tr><% }) %>
+        <tr><th>Name</th><th>Email</th><th>Phone</th><th>Test date</th><th>Target</th><th>Came from</th><th>Joined</th></tr>
+        <% students.forEach(s => { %><tr><td><%= s.name %></td><td><%= s.email %></td><td><%= s.phone %></td><td><%= s.testDate %></td><td><%= s.targetScore %></td><td><%= s.source || '—' %></td><td><%= fmt(s.createdAt) %></td></tr><% }) %>
       </table></div>
     </div>
   </div>

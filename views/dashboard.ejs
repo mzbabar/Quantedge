@@ -78,6 +78,18 @@
       </div>
     </div>
 
+    <!-- Full-length practice test -->
+    <div class="card" id="practice-test">
+      <h2>Full-length practice test</h2>
+      <% if (tests.length) { const t = tests[0]; %>
+        <p>Latest: <strong><%= t.correct %>/<%= t.total %></strong> · practice estimate <strong><%= t.estimate.low %>–<%= t.estimate.high %></strong> · <%= fmt(t.completedAt) %><% if (tests.length > 1) { %> · <%= tests.length %> attempts<% } %></p>
+        <a class="btn btn-ghost" href="/practice-test/<%= t.id %>/results">Review results</a> <a href="/practice-test" style="margin-left:12px">Take it again</a>
+      <% } else { %>
+        <p class="muted">21 questions · 45 minutes · real GMAT rules. See your score range, weak topics and pacing.</p>
+        <a class="btn" href="/practice-test">Start the practice test</a>
+      <% } %>
+    </div>
+
     <!-- Quant score check -->
     <div class="card" id="score-check">
       <h2>Quant score check</h2>

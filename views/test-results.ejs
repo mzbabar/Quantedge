@@ -1,0 +1,86 @@
+<%- include('partials/header') %>
+<%
+  const L = 'ABCDE';
+  const a = attempt;
+  const mm = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  const answered = a.answers.filter(x => x !== null).length;
+  const timed = a.times && a.times.some(t => t > 0);
+  const slow = timed ? questions.map((q, i) => i).filter(i => a.times[i] > 180) : [];
+  const weak = a.byCategory.filter(c => c.correct / c.total < 0.6);
+%>
+<section class="section quiz-intro">
+  <div class="wrap narrow">
+    <p class="eyebrow">Full-length practice test · results</p>
+    <div class="result-hero">
+      <div class="result-score"><span class="num"><%= a.correct %>/<%= a.total %></span><span>correct (<%= answered %> answered)</span></div>
+      <div class="result-band"><span class="small">Practice estimate</span><span class="num"><%= a.estimate.low %>–<%= a.estimate.high %></span><span class="small">Quant section (60–90) · <%= a.estimate.label %></span></div>
+      <div class="result-band"><span class="small">Time used</span><span class="num"><%= mm(a.seconds) %></span><span class="small">of 45:00 · <%= mm(Math.round(a.seconds / a.total)) %> per question (target 2:08)</span></div>
+    </div>
+    <p class="small muted">This is a non-adaptive practice test made of original questions, so the range is a rough indicator, not an official GMAT score.<% if (a.edits) { %> You used <%= a.edits %> of 3 answer edits.<% } %></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow">
+    <h2>Score by topic</h2>
+    <div class="cat-bars">
+      <% a.byCategory.forEach(c => { const pct = Math.round(100 * c.correct / c.total); %>
+      <div class="cat-row">
+        <span class="cat-name"><%= c.category %></span>
+        <span class="cat-track"><span class="cat-fill <%= pct < 60 ? 'low' : '' %>" style="width: <%= pct %>%"></span></span>
+        <span class="cat-val"><%= c.correct %>/<%= c.total %></span>
+      </div>
+      <% }) %>
+    </div>
+
+    <% if (timed) { %>
+    <h2>Pacing</h2>
+    <p class="muted">Each bar is one question. Anything past the gold line took longer than 3 minutes; on test day those minutes come out of later questions.</p>
+    <div class="pace">
+      <% const maxT = Math.max(240, ...a.times); questions.forEach((q, i) => { const t = a.times[i]; const ok = a.answers[i] === q.answer; %>
+      <div class="pace-col" title="Q<%= i + 1 %>: <%= mm(t) %> · <%= ok ? 'correct' : 'incorrect' %>">
+        <span class="pace-bar <%= ok ? 'ok' : 'bad' %>" style="height: <%= Math.max(3, Math.round(100 * t / maxT)) %>%"></span>
+        <span class="pace-n"><%= i + 1 %></span>
+      </div>
+      <% }) %>
+      <span class="pace-line" style="bottom: <%= 22 + Math.round(158 * 180 / maxT) %>px"></span>
+    </div>
+    <p class="small muted"><span class="rv-dot rv-ok"></span> correct <span class="rv-dot rv-bad"></span> incorrect<% if (slow.length) { %> · Over 3 minutes: Q<%= slow.map(i => i + 1).join(', Q') %><% } %></p>
+    <% } %>
+
+    <div class="card result-cta">
+      <div>
+        <h3><%= weak.length ? 'Turn your weak topics into points' : 'Ready to push for a top score?' %></h3>
+        <p class="muted"><%= weak.length ? 'Below 60% in ' + (weak.length > 1 ? weak.slice(0, -1).map(c => c.category).join(', ') + ' and ' + weak[weak.length - 1].category : weak[0].category) + '. ' : '' %>In a free 30-minute Zoom session we'll go through this test with you and build a study plan to your target score.</p>
+      </div>
+      <a class="btn" href="/dashboard#free-session">Book my free session</a>
+    </div>
+
+    <h2>Answers &amp; step-by-step solutions</h2>
+    <% questions.forEach((q, i) => { const mine = a.answers[i]; const ok = mine === q.answer; %>
+    <article class="card quiz-q <%= ok ? 'is-right' : 'is-wrong' %>">
+      <div class="sample-meta">
+        <span class="tag <%= ok ? 'tag-resource' : 'tag-announcement' %>"><%= ok ? 'Correct' : (mine === null ? 'Not answered' : 'Incorrect') %></span>
+        <span class="small muted">Question <%= i + 1 %> · <%= q.category %><% if (timed) { %> · <%= mm(a.times[i]) %><% } %></span>
+      </div>
+      <p class="sample-q"><%= q.q %></p>
+      <ol class="choices">
+        <% q.choices.forEach((c, k) => { %>
+        <li class="<%= k === q.answer ? 'choice-correct' : (k === mine ? 'choice-mine' : '') %>">
+          <span class="letter"><%= L[k] %></span><%= c %>
+          <% if (k === q.answer) { %><strong class="choice-note">Correct answer</strong><% } else if (k === mine) { %><strong class="choice-note">Your answer</strong><% } %>
+        </li>
+        <% }) %>
+      </ol>
+      <details class="solution" <%= ok ? '' : 'open' %>>
+        <summary>Step-by-step solution</summary>
+        <div class="concept"><strong>Concept: <%= q.concept %></strong><br><%= q.idea %><br><em><%= q.formula %></em></div>
+        <ol class="sol-steps"><% q.steps.forEach(st => { %><li><%= st %></li><% }) %></ol>
+        <p class="tip"><strong><%= q.tipLabel %>:</strong> <%= q.tip %></p>
+      </details>
+    </article>
+    <% }) %>
+    <p class="center"><a href="/practice-test">Back to the practice test page</a> · <a href="/dashboard">My dashboard</a></p>
+  </div>
+</section>
+<%- include('partials/footer') %>
