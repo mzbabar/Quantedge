@@ -5,18 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %> · <%= site.name %></title>
   <meta name="description" content="Live GMAT Quantitative Reasoning coaching on Zoom. Free intro session and a 4-week bootcamp.">
+  <meta name="theme-color" content="#0E1F3B">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <meta property="og:title" content="<%= site.name %> · GMAT Quant coaching">
+  <meta property="og:description" content="Live GMAT Quant coaching on Zoom. Free intro session, free Quant score check, and a 4-week bootcamp.">
+  <meta property="og:image" content="/brand/og-image.png">
   <style><%- inlineCss %></style>
 </head>
 <body>
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="/"><span class="logo">Σ</span><%= site.name %></a>
+    <a class="brand" href="/" aria-label="<%= site.name %> home"><%- include('mark') %><span class="wordmark"><b>MZB</b> ACADEMY</span></a>
     <nav>
       <% if (path === '/') { %>
-        <a href="#gmat-quant">The Quant section</a>
         <a href="#bootcamp">Bootcamp</a>
         <a href="#faq">FAQ</a>
       <% } %>
+      <a href="/practice-test">Practice test</a>
       <a href="/quiz">Free score check</a>
       <% if (user) { %>
         <% if (user.role === 'admin') { %><a href="/admin">Admin</a><% } %>

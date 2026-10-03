@@ -1,9 +1,20 @@
 </main>
 <footer class="foot">
   <div class="wrap foot-inner">
-    <div><strong><%= site.name %></strong> · Live GMAT Quant coaching on Zoom</div>
-    <div class="muted">Questions? <a href="mailto:<%= site.contactEmail %>"><%= site.contactEmail %></a></div>
-    <div class="muted small">GMAT™ is a trademark of GMAC. This site is not affiliated with or endorsed by GMAC.</div>
+    <div class="foot-brand">
+      <%- include('mark', { m: '#ffffff' }) %>
+      <div>
+        <div class="wordmark wordmark-lg"><b>MZB</b> ACADEMY</div>
+        <div class="tagline"><span>Math Mastery</span><i></i><span>Test Prep</span></div>
+      </div>
+    </div>
+    <div class="foot-links">
+      <a href="/quiz">Free Quant score check</a>
+      <a href="/#bootcamp">4-week bootcamp</a>
+      <a href="/free">Book a free session</a>
+      <a href="mailto:<%= site.contactEmail %>"><%= site.contactEmail %></a>
+    </div>
+    <div class="small foot-legal">© <%= new Date().getFullYear() %> <%= site.name %>. GMAT™ is a trademark of GMAC. This site is not affiliated with or endorsed by GMAC.</div>
   </div>
 </footer>
 </body>
