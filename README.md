@@ -26,6 +26,7 @@ Built with Node.js + Express + EJS. Data is stored in Postgres (required on Verc
    | `SITE_NAME` | optional, defaults to `MZB Academy` |
    | `BOOTCAMP_PRICE` | optional, defaults to `$349` |
    | `PAYMENT_LINK` | optional Stripe Payment Link (see below) |
+   | `SITE_URL` | your live address, e.g. `https://mzbacademy.com` (used for canonical links, sitemap and share previews) |
 
 5. **Redeploy** (Deployments → ⋯ → Redeploy) so the variables take effect.
 6. **Create your tutor account**: open your site, click *Book free session*, and register with the `ADMIN_EMAIL` address. You'll land on `/admin`.
@@ -57,3 +58,11 @@ Without `DATABASE_URL`, data is saved to `data/db.json`. Paste your Neon `DATABA
 
 - GMAT facts on the home page (21 questions, 45 minutes, no calculator, section score 60–90, total 205–805) are from mba.com as of September 2026 — re-check if GMAC changes the exam.
 - The login rate limiter is per server instance; for heavier protection enable Vercel Firewall rate-limiting rules on `/login` and `/register`.
+
+## SEO and AI search
+
+- Every public page (/, /practice-test, /quiz) has its own title, description, canonical link, Open Graph/Twitter preview and JSON-LD structured data (EducationalOrganization, WebSite, Course, FAQPage, Quiz, BreadcrumbList). Edit titles, descriptions and the FAQ in `seo.js`.
+- Private pages (dashboard, admin, login, results, the exam itself) send `noindex`. Vercel preview deployments are `noindex` automatically.
+- `/robots.txt` allows search engines and named AI crawlers (GPTBot, OAI-SearchBot, ClaudeBot, Claude-SearchBot, PerplexityBot, Google-Extended, Applebot and more) on public pages. To stop AI *training* while staying in AI *search*, change `Allow: /` to `Disallow: /` for GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, meta-externalagent and CCBot in `seo.js`.
+- `/sitemap.xml` lists the public pages; `/llms.txt` gives AI assistants a plain-language summary of the site.
+- After deploying: add the site to Google Search Console and Bing Webmaster Tools (Bing also powers ChatGPT search), verify ownership, and submit `https://YOUR-DOMAIN/sitemap.xml`.

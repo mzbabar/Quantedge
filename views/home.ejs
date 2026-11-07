@@ -3,8 +3,7 @@
 <section class="hero">
   <div class="wrap hero-grid">
     <div>
-      <p class="eyebrow">GMAT Focus Edition · Quantitative Reasoning</p>
-      <h1>21 questions. 45 minutes. No calculator.<br><span class="accent">Let's make every minute count.</span></h1>
+      <h1><span class="eyebrow h1-eyebrow">GMAT Quant tutoring · GMAT Focus Edition</span>21 questions. 45 minutes. No calculator.<br><span class="accent">Let's make every minute count.</span></h1>
       <p class="lead">Live, small-group coaching on Zoom for the GMAT Quant section. Start with a free 1-on-1 session — we'll diagnose where you're losing points and map a plan to your target score.</p>
       <div class="cta-row">
         <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
@@ -164,12 +163,9 @@
 
 <section id="faq" class="section alt">
   <div class="wrap narrow">
-    <h2>FAQ</h2>
-    <details><summary>How many math questions are on the GMAT?</summary><p>The Quantitative Reasoning section has 21 Problem Solving questions in 45 minutes. Data Insights (20 questions) also uses math skills — especially Data Sufficiency and table/graph questions.</p></details>
-    <details><summary>Is the free session really free?</summary><p>Yes. It's a 30-minute 1-on-1 Zoom call with no payment details and no obligation to join the bootcamp.</p></details>
-    <details><summary>Can I use a calculator?</summary><p>Not on Quant. An on-screen calculator is available only in Data Insights, so we train fast mental-math and estimation techniques.</p></details>
-    <details><summary>What if I miss a live class?</summary><p>Recordings and practice sets are posted to your secure student dashboard.</p></details>
-    <details><summary>When should I start?</summary><p>Ideally 6–10 weeks before your test date so you finish the bootcamp with time left for full practice tests.</p></details>
+    <h2>GMAT Quant FAQ</h2>
+    <% faq.forEach(([q, ans]) => { %><details><summary><%= q %></summary><p><%= ans %></p></details>
+    <% }) %>
   </div>
 </section>
 

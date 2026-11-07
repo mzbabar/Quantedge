@@ -3,14 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><%= title %> · <%= site.name %></title>
-  <meta name="description" content="Live GMAT Quantitative Reasoning coaching on Zoom. Free intro session and a 4-week bootcamp.">
-  <meta name="theme-color" content="#0E1F3B">
+  <title><%= seo.title || (title + ' · ' + site.name) %></title>
+  <meta name="description" content="<%= seo.description %>">
+  <meta name="robots" content="<%= seo.robots %>">
+<% if (seo.indexable) { %>  <link rel="canonical" href="<%= seo.canonical %>">
+<% } %>  <meta name="theme-color" content="#0E1F3B">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <meta property="og:title" content="<%= site.name %> · GMAT Quant coaching">
-  <meta property="og:description" content="Live GMAT Quant coaching on Zoom. Free intro session, free Quant score check, and a 4-week bootcamp.">
-  <meta property="og:image" content="/brand/og-image.png">
-  <style><%- inlineCss %></style>
+  <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
+  <link rel="preload" href="/fonts/montserrat-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/montserrat-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="<%= site.name %>">
+  <meta property="og:title" content="<%= seo.title || (title + ' · ' + site.name) %>">
+  <meta property="og:description" content="<%= seo.description %>">
+  <meta property="og:url" content="<%= seo.canonical %>">
+  <meta property="og:image" content="<%= seo.base %>/brand/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="MZB Academy logo: Math Mastery, Test Prep">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= seo.title || (title + ' · ' + site.name) %>">
+  <meta name="twitter:description" content="<%= seo.description %>">
+  <meta name="twitter:image" content="<%= seo.base %>/brand/og-image.png">
+<% if (seo.jsonld) { %>  <script type="application/ld+json"><%- seo.jsonld %></script>
+<% } %>  <style><%- inlineCss %></style>
 </head>
 <body>
 <header class="nav">

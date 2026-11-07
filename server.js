@@ -10,8 +10,12 @@ const fs = require('fs');
 const db = require('./db');
 const QUIZ = require('./quiz-data');
 const TEST = require('./test-data');
+const SEO = require('./seo');
 // Styles are inlined into every page so school/corporate web filters that break separate CSS requests can't unstyle the site.
-const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'), 'utf8');
+// Minified once at startup (comments and extra whitespace removed) to keep every page small.
+const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'), 'utf8')
+  .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\s+/g, ' ')
+  .replace(/\s*([{};,>])\s*/g, '$1').replace(/:\s+/g, ':').replace(/;}/g, '}').trim();
 // Montserrat (the logo's typeface) is self-hosted under /public/fonts so web filters can't block a font CDN.
 
 const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
@@ -31,7 +35,7 @@ app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(express.urlencoded({ extended: false, limit: '50kb' }));
-app.use(express.static(path.join(__dirname, 'public'))); // local dev only; Vercel serves /public from its CDN
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' })); // local dev only; Vercel serves /public from its CDN
 // Signed-cookie sessions: stateless, so they work across Vercel's serverless instances.
 app.use(cookieSession({
   name: 'qe_session',
@@ -62,6 +66,8 @@ app.use(wrap(async (req, res, next) => {
   res.locals.path = req.path;
   next();
 }));
+app.use(SEO.seoLocals(SITE));
+SEO.routes(app, SITE);
 app.use((req, res, next) => {
   if (req.method !== 'POST') return next();
   const sent = String((req.body && req.body._csrf) || '');
@@ -69,6 +75,38 @@ app.use((req, res, next) => {
   if (!ok) return res.status(403).render('error', { title: 'Session expired', message: 'Your form expired. Please go back, refresh, and try again.' });
   next();
 });
+
+// ---------- private visit counter (shown only on /admin) ----------
+// A "visit" starts when a browser arrives or returns after 30+ minutes away. Bots, the tutor's own
+// browsing, the admin pages and non-page requests aren't counted. No personal data is stored: only totals.
+const STATS_TZ = process.env.STATS_TZ || 'America/New_York';
+const BOT_RE = /bot|crawl|spider|slurp|preview|monitor|lighthouse|headless|curl|wget|python|axios|node-fetch|go-http|scrapy|facebookexternalhit|embedly|whatsapp|vercel/i;
+const TRACKED_PAGES = new Set(['/', '/quiz', '/practice-test', '/register', '/login', '/dashboard', '/free']);
+const dayKey = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: STATS_TZ }); // YYYY-MM-DD
+app.use(async (req, res, next) => {
+  try {
+    const ua = req.get('user-agent') || '';
+    const isPage = req.method === 'GET' && !/\.[a-z0-9]{2,5}$/i.test(req.path) && !req.path.startsWith('/admin');
+    if (!isPage || !ua || BOT_RE.test(ua) || (req.user && req.user.role === 'admin')) return next();
+    const nowMs = Date.now();
+    const newVisitor = !req.session.vid;
+    const newVisit = newVisitor || !req.session.seen || nowMs - req.session.seen > 30 * 60 * 1000;
+    if (newVisitor) req.session.vid = crypto.randomBytes(8).toString('hex');
+    req.session.seen = nowMs;
+    const counts = { views: 1 };
+    if (newVisit) counts.visits = 1;
+    if (newVisitor) counts.visitors = 1;
+    const day = dayKey();
+    const page = TRACKED_PAGES.has(req.path) ? req.path : (req.path.startsWith('/quiz/') ? '/quiz (results)' : req.path.startsWith('/practice-test/') ? '/practice-test (taking/results)' : 'other');
+    await Promise.all([
+      db.incr('stats', 'stats:total', counts, { since: day }),
+      db.incr('stats', `stats:day:${day}`, counts, { day }),
+      db.incr('stats', 'stats:pages', { [page]: 1 }),
+    ]);
+  } catch (e) { console.error('visit counter:', e.message); } // never let counting break the site
+  next();
+});
+
 const requireAuth = (req, res, next) => {
   if (!req.user) { flash(req, 'info', 'Please log in to continue.'); return res.redirect('/login'); }
   next();
@@ -81,7 +119,7 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHea
   handler: (req, res) => res.status(429).render('error', { title: 'Too many attempts', message: 'Please wait 15 minutes and try again.' }) });
 
 // ---------- public ----------
-app.get('/', (req, res) => res.render('home', { title: 'GMAT Quant Coaching' }));
+app.get('/', (req, res) => res.render('home', { title: 'GMAT Quant Coaching', faq: SEO.FAQ }));
 
 app.get('/register', (req, res) => {
   if (req.user) return res.redirect('/dashboard');
@@ -303,7 +341,20 @@ app.get('/admin', requireAuth, requireAdmin, wrap(async (req, res) => {
   const users = await db.all('users');
   const byId = Object.fromEntries(users.map(u => [u.id, u]));
   const withStudent = (x) => ({ ...x, student: byId[x.userId] || { name: '(deleted)', email: '' } });
+  const stats = await db.all('stats');
+  const total = stats.find(x => x.id === 'stats:total') || {};
+  const pages = stats.find(x => x.id === 'stats:pages') || {};
+  const days = {}; stats.filter(x => x.day).forEach(x => { days[x.day] = x; });
+  const last = (n) => { const out = []; for (let i = n - 1; i >= 0; i--) { const k = dayKey(new Date(Date.now() - i * 864e5)); out.push({ day: k, ...(days[k] || {}) }); } return out; };
+  const last30 = last(30);
+  const sum = (arr, f) => arr.reduce((t, d) => t + (d[f] || 0), 0);
+  const visits = {
+    today: last30[29].visits || 0, week: sum(last30.slice(-7), 'visits'), month: sum(last30, 'visits'),
+    total: total.visits || 0, visitors: total.visitors || 0, views: total.views || 0, since: total.since,
+    last30, pages: Object.entries(pages).filter(([k, v]) => typeof v === 'number').sort((a, b) => b[1] - a[1]),
+  };
   res.render('admin', {
+    visits,
     title: 'Tutor admin',
     students: users.filter(x => x.role !== 'admin'),
     sessions: (await db.all('bookings')).map(withStudent),
