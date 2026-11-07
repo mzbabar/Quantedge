@@ -9,7 +9,7 @@
         <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
         <a class="btn btn-ghost" href="/quiz">Take the free Quant score check</a>
       </div>
-      <p class="small muted">30 minutes · No payment details needed</p>
+      <p class="small muted">30 minutes · No payment details needed · You can set up your bootcamp sessions during the free class</p>
     </div>
     <div class="stat-card">
       <div class="stat"><span class="num">21</span><span>Quant questions</span></div>
@@ -76,7 +76,7 @@
     <h2>How it works</h2>
     <div class="steps">
       <div class="step"><span>1</span><h3>Create a free account</h3><p>Takes one minute. Tell us your test date and target score.</p></div>
-      <div class="step"><span>2</span><h3>Free 1-on-1 Zoom session</h3><p>We work a few timed questions together, spot your weak areas, and build a study plan.</p></div>
+      <div class="step"><span>2</span><h3>Free 1-on-1 Zoom session</h3><p>We work a few timed questions together, spot your weak areas, and build a study plan. You'll also get the option to set up your bootcamp sessions.</p></div>
       <div class="step"><span>3</span><h3>Join the bootcamp</h3><p>Four weeks of live classes, practice sets and direct support until test day.</p></div>
     </div>
   </div>
@@ -156,7 +156,7 @@
         <li>Full-length Quant section review before test day</li>
       </ul>
       <a class="btn btn-block" href="<%= user ? '/dashboard#bootcamp' : '/register' %>">Register for the bootcamp</a>
-      <p class="small muted center">Not sure yet? <a href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Start with the free session.</a></p>
+      <p class="small muted center">Not sure yet? <a href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Start with the free session</a>. During your free class, you'll get the option to set up your bootcamp sessions.</p>
     </div>
   </div>
 </section>

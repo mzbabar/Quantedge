@@ -14,6 +14,7 @@ const FAQ = [
   ['What topics does GMAT Quant cover?', 'Arithmetic and number properties, algebra (including coordinate geometry), word problems such as rates, work, mixtures, percents and interest, and statistics, counting and probability. Plane geometry is no longer tested.'],
   ['How is the GMAT Quant section scored?', 'The Quant section is scored from 60 to 90, and the total GMAT score ranges from 205 to 805. All three sections count equally toward the total.'],
   ['Is the free session really free?', "Yes. It's a 30-minute 1-on-1 Zoom call with no payment details and no obligation to join the bootcamp."],
+  ['How do I schedule my bootcamp sessions?', "During your free class, you'll get the option to set up your bootcamp sessions. We'll pick class times that fit your schedule and test date."],
   ['What if I miss a live class?', 'Recordings and practice sets are posted to your secure student dashboard.'],
   ['When should I start preparing?', 'Ideally 6 to 10 weeks before your test date, so you finish the bootcamp with time left for full-length practice tests.'],
 ];
@@ -149,7 +150,7 @@ function routes(app, site) {
 - [Home: GMAT Quant coaching and bootcamp](${base}/): what the GMAT Quant section tests, how coaching works, the 4-week bootcamp curriculum and price, FAQ.
 - [Free full-length GMAT Quant practice test](${base}/practice-test): 21 questions, 45 minutes, real test rules (one question at a time, bookmarks, review and edit up to 3 answers). Free account required.
 - [Free GMAT Quant score check](${base}/quiz): 12 timed questions with a practice score range, weak topics and step-by-step solutions. No sign-up.
-- [Book a free 1-on-1 Zoom session](${base}/free)
+- [Book a free 1-on-1 Zoom session](${base}/free): During your free class, you'll get the option to set up your bootcamp sessions.
 
 ## GMAT Quant facts (GMAT Focus Edition)
 - 21 Problem Solving questions in 45 minutes (about 2 minutes 8 seconds each); no calculator.

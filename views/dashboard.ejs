@@ -29,7 +29,7 @@
             <p class="muted">You asked for: <%= freeSession.preferred1.replace('T',' ') %><% if (freeSession.preferred2) { %> or <%= freeSession.preferred2.replace('T',' ') %><% } %> (<%= freeSession.timezone %>). Your tutor will confirm a time and your Zoom link will appear here.</p>
           <% } %>
         <% } else { %>
-          <p class="muted">30 minutes, 1-on-1. Pick two times that work for you.</p>
+          <p class="muted">30 minutes, 1-on-1. Pick two times that work for you. During your free class, you'll get the option to set up your bootcamp sessions.</p>
           <form method="post" action="/free-session" class="form">
             <input type="hidden" name="_csrf" value="<%= csrf %>">
             <div class="row2">
