@@ -266,6 +266,20 @@ fieldset.quiz-q { min-width: 0; }
 .visit-pages { margin-top: 14px; background: var(--bg-alt); }
 @media (max-width: 860px) { .visit-kpis { grid-template-columns: repeat(3, 1fr); } }
 
+.traffic-table { display: grid; gap: 0; margin: 14px 0 6px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.tt-row { display: grid; grid-template-columns: 1.4fr repeat(4, 1fr); align-items: center; padding: 12px 16px; border-top: 1px solid var(--line); }
+.tt-row:first-child { border-top: 0; }
+.tt-head { background: var(--bg-alt); font-size: .82rem; font-weight: 600; color: var(--muted); padding: 8px 16px; }
+.tt-row b { font-family: var(--display); font-size: 1.6rem; color: var(--navy); font-variant-numeric: tabular-nums; }
+.tt-label { font-weight: 600; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin: 0 4px 0 2px; }
+.sw-views { background: #c9d3e3; } .sw-uniq { background: var(--navy); }
+.visit-stack { display: flex; flex-direction: column; justify-content: flex-end; width: 100%; background: #c9d3e3; border-radius: 3px 3px 0 0; overflow: hidden; }
+.visit-uniq { display: block; width: 100%; background: var(--navy); }
+.visit-col:last-child .visit-uniq { background: var(--accent); }
+.visit-pages + .visit-pages { margin-top: 8px; }
+@media (max-width: 860px) { .tt-row { grid-template-columns: 1fr 1fr; gap: 6px 12px; } .tt-head { display: none; } .tt-label { grid-column: 1 / -1; } .tt-row b { font-size: 1.2rem; } .tt-row b::before { content: attr(data-l); display: block; font-family: var(--body, inherit); font-size: .7rem; font-weight: 600; color: var(--muted); letter-spacing: 0; } }
+
 .foot { background: var(--navy); color: #C5CBD8; padding: 44px 0 32px; }
 .foot-inner { display: grid; grid-template-columns: auto 1fr; gap: 24px 40px; align-items: center; }
 .foot-brand { display: flex; align-items: center; gap: 16px; }

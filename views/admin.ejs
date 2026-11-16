@@ -4,6 +4,51 @@
   <div class="wrap">
     <p class="eyebrow">Tutor admin</p>
     <h1>Dashboard</h1>
+    <div class="card" id="visits">
+      <div class="visits-head">
+        <h2>Site traffic</h2>
+        <span class="small muted">Private: only you can see this<% if (visits.since) { %> · counting since <%= visits.since %><% } %> · your own visits and bots aren't counted</span>
+      </div>
+      <% const n = (x) => (x || 0).toLocaleString(); const fmtDay = (d) => new Date(d + 'T12:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }); %>
+      <div class="traffic-table">
+        <div class="tt-row tt-head"><span></span><span>Today</span><span>This week</span><span>This month</span><span>All time</span></div>
+        <div class="tt-row"><span class="tt-label"><i class="sw sw-views"></i>Page views</span><b data-l="Today"><%= n(visits.views.today) %></b><b data-l="This week"><%= n(visits.views.week) %></b><b data-l="This month"><%= n(visits.views.month) %></b><b data-l="All time"><%= n(visits.views.total) %></b></div>
+        <div class="tt-row"><span class="tt-label"><i class="sw sw-uniq"></i>Unique visitors</span><b data-l="Today"><%= n(visits.uniques.today) %></b><b data-l="This week"><%= n(visits.uniques.week) %></b><b data-l="This month"><%= n(visits.uniques.month) %></b><b data-l="All time"><%= n(visits.uniques.total) %></b></div>
+      </div>
+      <p class="small muted" style="margin:4px 0 0">Week starts Monday (<%= fmtDay(visits.weekStart) %>). Visits (a person arriving, or returning after 30+ minutes): <%= n(visits.sessions.today) %> today, <%= n(visits.sessions.month) %> in the last 30 days, <%= n(visits.sessions.total) %> all time.</p>
+
+      <% const maxV = Math.max(1, ...visits.last30.map(d => d.views || 0)); %>
+      <p class="small muted" style="margin:18px 0 4px">Last 30 days: <i class="sw sw-views"></i>page views and <i class="sw sw-uniq"></i>unique visitors per day</p>
+      <div class="visit-chart">
+        <% visits.last30.forEach((d, i) => { const v = d.views || 0, u = d.uniques || 0; %>
+        <div class="visit-col" title="<%= fmtDay(d.day) %>: <%= v %> page views, <%= u %> unique visitors">
+          <span class="visit-n"><%= v || '' %></span>
+          <span class="visit-stack" style="height: <%= v ? Math.max(4, Math.round(100 * v / maxV)) : 0 %>%">
+            <span class="visit-uniq" style="height: <%= v ? Math.round(100 * Math.min(u, v) / v) : 0 %>%"></span>
+          </span>
+          <span class="visit-day"><%= (i % 5 === 4 || i === 29) ? fmtDay(d.day) : '' %></span>
+        </div>
+        <% }) %>
+      </div>
+
+      <details class="visit-pages">
+        <summary>Day-by-day numbers (last 30 days)</summary>
+        <table>
+          <tr><th>Date</th><th style="text-align:right">Unique visitors</th><th style="text-align:right">Visits</th><th style="text-align:right">Page views</th></tr>
+          <% visits.last30.slice().reverse().filter(d => !visits.since || d.day >= visits.since || d.views).forEach(d => { %><tr><td><%= fmtDay(d.day) %></td><td style="text-align:right"><%= d.uniques === undefined ? (d.views ? '—' : 0) : n(d.uniques) %></td><td style="text-align:right"><%= n(d.visits) %></td><td style="text-align:right"><%= n(d.views) %></td></tr><% }) %>
+        </table>
+      </details>
+      <% if (visits.pages.length) { %>
+      <details class="visit-pages">
+        <summary>Most viewed pages (all time)</summary>
+        <table>
+          <tr><th>Page</th><th style="text-align:right">Views</th></tr>
+          <% visits.pages.forEach(([pg, c]) => { %><tr><td><%= pg === '/' ? 'Home page' : pg %></td><td style="text-align:right"><%= n(c) %></td></tr><% }) %>
+        </table>
+      </details>
+      <% } %>
+    </div>
+
     <div class="kpis">
       <div class="kpi"><span class="num"><%= testAttempts.length %></span>practice tests taken</div>
       <div class="kpi"><span class="num"><%= quizAttempts.length %></span>score checks taken</div>

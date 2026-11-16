@@ -38,6 +38,14 @@ if (process.env.DATABASE_URL) {
     insert: async (c, doc) => { await q('INSERT INTO docs (collection, id, data, created_at) VALUES ($1,$2,$3,$4)', [c, doc.id, doc, doc.createdAt]); return doc; },
     update: async (c, docId, patch) => (await q('UPDATE docs SET data = data || $3::jsonb WHERE collection=$1 AND id=$2 RETURNING data', [c, docId, JSON.stringify(patch)])).rows[0]?.data || null,
     remove: async (c, docId) => { await q('DELETE FROM docs WHERE collection=$1 AND id=$2', [c, docId]); },
+    // Atomically add numbers to fields of one document, creating it if needed (used by the visit counter).
+    incr: async (c, docId, counts, meta = {}) => {
+      await q(`INSERT INTO docs (collection, id, data) VALUES ($1, $2, $3::jsonb)
+        ON CONFLICT (id) DO UPDATE SET data = docs.data || (
+          SELECT jsonb_object_agg(k, COALESCE((docs.data->>k)::bigint, 0) + (EXCLUDED.data->>k)::bigint)
+          FROM jsonb_object_keys($4::jsonb) AS k)`,
+        [c, docId, JSON.stringify({ id: docId, ...meta, ...counts }), JSON.stringify(counts)]);
+    },
   };
 } else {
   if (process.env.VERCEL) {
@@ -60,6 +68,12 @@ if (process.env.DATABASE_URL) {
     insert: async (c, doc) => { col(c).push(doc); save(); return doc; },
     update: async (c, docId, patch) => { const d = col(c).find(x => x.id === docId); if (!d) return null; Object.assign(d, patch); save(); return d; },
     remove: async (c, docId) => { data[c] = col(c).filter(d => d.id !== docId); save(); },
+    incr: async (c, docId, counts, meta = {}) => {
+      let d = col(c).find(x => x.id === docId);
+      if (!d) { d = { id: docId, createdAt: now(), ...meta }; col(c).push(d); }
+      for (const k of Object.keys(counts)) d[k] = (d[k] || 0) + counts[k];
+      save();
+    },
   };
 }
 

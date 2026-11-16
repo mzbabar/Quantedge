@@ -20,9 +20,15 @@ const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'),
 
 const IS_PROD = process.env.NODE_ENV === 'production' || !!process.env.VERCEL;
 const ADMIN_EMAILS = (process.env.ADMIN_EMAIL || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+// Shows prices as "$349" whether BOOTCAMP_PRICE is set to "349", "349.00" or "$349".
+function formatPrice(v) {
+  const t = String(v).trim();
+  if (/^\d+(\.\d+)?$/.test(t)) { const n = Number(t); return '$' + (Number.isInteger(n) ? n.toLocaleString('en-US') : n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })); }
+  return t;
+}
 const SITE = {
   name: process.env.SITE_NAME || 'MZB Academy',
-  bootcampPrice: process.env.BOOTCAMP_PRICE || '$349',
+  bootcampPrice: formatPrice(process.env.BOOTCAMP_PRICE || '349'),
   paymentLink: process.env.PAYMENT_LINK || '', // e.g. a Stripe Payment Link
   contactEmail: process.env.CONTACT_EMAIL || 'hello@example.com',
 };
@@ -83,6 +89,8 @@ const STATS_TZ = process.env.STATS_TZ || 'America/New_York';
 const BOT_RE = /bot|crawl|spider|slurp|preview|monitor|lighthouse|headless|curl|wget|python|axios|node-fetch|go-http|scrapy|facebookexternalhit|embedly|whatsapp|vercel/i;
 const TRACKED_PAGES = new Set(['/', '/quiz', '/practice-test', '/register', '/login', '/dashboard', '/free']);
 const dayKey = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: STATS_TZ }); // YYYY-MM-DD
+// Weeks start on Monday; the key is that Monday's date.
+const weekKey = (day) => { const d = new Date(day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
 app.use(async (req, res, next) => {
   try {
     const ua = req.get('user-agent') || '';
@@ -96,11 +104,18 @@ app.use(async (req, res, next) => {
     const counts = { views: 1 };
     if (newVisit) counts.visits = 1;
     if (newVisitor) counts.visitors = 1;
-    const day = dayKey();
+    const day = dayKey(), week = weekKey(day), month = day.slice(0, 7);
+    // Unique visitors per day / week / month: each browser is counted once per period.
+    const dayC = { ...counts }, weekC = { views: 1 }, monthC = { views: 1 };
+    if (req.session.vd !== day) { dayC.uniques = 1; req.session.vd = day; }
+    if (req.session.vw !== week) { weekC.uniques = 1; req.session.vw = week; }
+    if (req.session.vm !== month) { monthC.uniques = 1; req.session.vm = month; }
     const page = TRACKED_PAGES.has(req.path) ? req.path : (req.path.startsWith('/quiz/') ? '/quiz (results)' : req.path.startsWith('/practice-test/') ? '/practice-test (taking/results)' : 'other');
     await Promise.all([
       db.incr('stats', 'stats:total', counts, { since: day }),
-      db.incr('stats', `stats:day:${day}`, counts, { day }),
+      db.incr('stats', `stats:day:${day}`, dayC, { day }),
+      db.incr('stats', `stats:week:${week}`, weekC, { week }),
+      db.incr('stats', `stats:month:${month}`, monthC, { month }),
       db.incr('stats', 'stats:pages', { [page]: 1 }),
     ]);
   } catch (e) { console.error('visit counter:', e.message); } // never let counting break the site
@@ -348,11 +363,16 @@ app.get('/admin', requireAuth, requireAdmin, wrap(async (req, res) => {
   const last = (n) => { const out = []; for (let i = n - 1; i >= 0; i--) { const k = dayKey(new Date(Date.now() - i * 864e5)); out.push({ day: k, ...(days[k] || {}) }); } return out; };
   const last30 = last(30);
   const sum = (arr, f) => arr.reduce((t, d) => t + (d[f] || 0), 0);
+  const today = dayKey(), thisWeek = stats.find(x => x.id === `stats:week:${weekKey(today)}`) || {}, thisMonth = stats.find(x => x.id === `stats:month:${today.slice(0, 7)}`) || {};
   const visits = {
-    today: last30[29].visits || 0, week: sum(last30.slice(-7), 'visits'), month: sum(last30, 'visits'),
-    total: total.visits || 0, visitors: total.visitors || 0, views: total.views || 0, since: total.since,
-    last30, pages: Object.entries(pages).filter(([k, v]) => typeof v === 'number').sort((a, b) => b[1] - a[1]),
+    since: total.since, last30,
+    views: { today: last30[29].views || 0, week: thisWeek.views || 0, month: thisMonth.views || 0, total: total.views || 0 },
+    uniques: { today: last30[29].uniques || 0, week: thisWeek.uniques || 0, month: thisMonth.uniques || 0, total: total.visitors || 0 },
+    sessions: { today: last30[29].visits || 0, month: sum(last30, 'visits'), total: total.visits || 0 },
+    weekStart: weekKey(today),
+    pages: Object.entries(pages).filter(([k, v]) => typeof v === 'number').sort((a, b) => b[1] - a[1]),
   };
+
   res.render('admin', {
     visits,
     title: 'Tutor admin',
