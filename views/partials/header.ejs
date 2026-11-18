@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
   <link rel="preload" href="/fonts/montserrat-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/fonts/montserrat-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="<%= site.name %>">
   <meta property="og:title" content="<%= seo.title || (title + ' · ' + site.name) %>">
@@ -30,7 +31,7 @@
 <% } %>  <style><%- inlineCss %></style>
 </head>
 <body>
-<header class="nav">
+<header class="nav<%= path === '/' ? ' nav--over' : '' %>">
   <div class="wrap nav-inner">
     <a class="brand" href="/" aria-label="<%= site.name %> home"><%- include('mark') %><span class="wordmark"><b>MZB</b> ACADEMY</span></a>
     <nav>

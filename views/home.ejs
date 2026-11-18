@@ -1,114 +1,130 @@
 <%- include('partials/header') %>
-
-<section class="hero">
-  <div class="wrap hero-grid">
-    <div>
-      <h1><span class="eyebrow h1-eyebrow">GMAT Quant tutoring · GMAT Focus Edition</span>21 questions. 45 minutes. No calculator.<br><span class="accent">Let's make every minute count.</span></h1>
-      <p class="lead">Live, small-group coaching on Zoom for the GMAT Quant section. Start with a free 1-on-1 session — we'll diagnose where you're losing points and map a plan to your target score.</p>
-      <div class="cta-row">
-        <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
-        <a class="btn btn-ghost" href="/quiz">Take the free Quant score check</a>
-      </div>
-      <p class="small muted">30 minutes · No payment details needed · You can set up your bootcamp sessions during the free class</p>
-    </div>
-    <div class="stat-card">
-      <div class="stat"><span class="num">21</span><span>Quant questions</span></div>
-      <div class="stat"><span class="num">45</span><span>minutes</span></div>
-      <div class="stat"><span class="num">~2:08</span><span>per question</span></div>
-      <div class="stat"><span class="num">60–90</span><span>section score</span></div>
-    </div>
-  </div>
-</section>
-
-<section class="section test-band">
-  <div class="wrap test-band-inner">
-    <div>
-      <p class="eyebrow" style="color: var(--accent)">New · Free</p>
-      <h2>Take a full-length GMAT Quant practice test</h2>
-      <p>21 questions in 45 minutes under real test rules, with a score range, topic breakdown, pacing chart and full solutions.</p>
-      <div class="test-facts"><span>21 questions</span><span>45:00 timer</span><span>Review &amp; edit 3 answers</span><span>No calculator</span></div>
-    </div>
-    <a class="btn" href="/practice-test">Start the practice test</a>
-  </div>
-</section>
-
-
-<section id="gmat-quant" class="section">
-  <div class="wrap">
-    <h2>What's on the GMAT Quant section</h2>
-    <p class="section-lead">The current GMAT (Focus Edition) has three 45-minute sections — Quantitative Reasoning, Verbal Reasoning and Data Insights — 64 questions in total, taken in any order you choose.</p>
-    <div class="grid-3">
-      <div class="card">
-        <h3>Format</h3>
-        <ul class="ticks">
-          <li>21 Problem Solving questions (multiple choice)</li>
-          <li>45 minutes — about 2 minutes 8 seconds each</li>
-          <li>Computer-adaptive: difficulty adjusts to your answers</li>
-          <li>No calculator allowed</li>
-          <li>You can review and change up to 3 answers per section</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Content tested</h3>
-        <ul class="ticks">
-          <li><strong>Arithmetic:</strong> number properties, fractions, percents, ratios</li>
-          <li><strong>Algebra:</strong> equations, inequalities, functions, exponents</li>
-          <li><strong>Word problems:</strong> rates, work, mixtures, interest</li>
-          <li><strong>Statistics &amp; counting:</strong> averages, sets, probability, combinatorics</li>
-          <li>Plane geometry was removed; Data Sufficiency moved to Data Insights</li>
-        </ul>
-      </div>
-      <div class="card">
-        <h3>Scoring</h3>
-        <ul class="ticks">
-          <li>Quant section score: 60–90</li>
-          <li>Total GMAT score: 205–805</li>
-          <li>All three sections weigh equally in your total</li>
-          <li>Unanswered questions cost you — pacing is a real skill</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="section alt">
-  <div class="wrap">
-    <h2>How it works</h2>
-    <div class="steps">
-      <div class="step"><span>1</span><h3>Create a free account</h3><p>Takes one minute. Tell us your test date and target score.</p></div>
-      <div class="step"><span>2</span><h3>Free 1-on-1 Zoom session</h3><p>We work a few timed questions together, spot your weak areas, and build a study plan. You'll also get the option to set up your bootcamp sessions.</p></div>
-      <div class="step"><span>3</span><h3>Join the bootcamp</h3><p>Four weeks of live classes, practice sets and direct support until test day.</p></div>
-    </div>
-  </div>
-</section>
-
-<section id="samples" class="section samples">
-  <div class="wrap">
-    <p class="eyebrow">Free practice</p>
-    <h2>Try two sample questions</h2>
-    <p class="section-lead">Original GMAT-style questions from our bootcamp practice sets. Give yourself about 2 minutes each, with no calculator, then open the step-by-step solution.</p>
 <%
-  const samples = [
-    { n: 1, topic: 'Word problems · rates', time: '2:00',
-      q: 'Towns A and B are 270 miles apart. Priya leaves A at 9:00 a.m., driving toward B at 50 mph. At 10:00 a.m., Omar leaves B, driving toward A at 60 mph. How far from Town A are they when they meet?',
-      choices: ['120 miles', '135 miles', '150 miles', '160 miles', '170 miles'], ans: 2,
-      concept: 'Relative speed (closing speed)',
-      idea: 'Two objects moving toward each other close the gap at the sum of their speeds: time to meet = gap ÷ (speed₁ + speed₂).',
-      steps: ['Head start first: by 10:00 Priya has driven 50 × 1 = 50 miles.', 'Gap left when both are moving: 270 − 50 = 220 miles.', 'They close the gap at 50 + 60 = 110 mph, so they meet 220 ÷ 110 = 2 hours later.', 'Priya\'s distance from A: 50 + (50 × 2) = 150 miles.'],
-      tipLabel: 'Quick check', tip: 'Omar drives 60 × 2 = 120 miles, and 150 + 120 = 270 ✓. Forgetting the head start gives messy numbers, which is a sign the setup is wrong.' },
-    { n: 2, topic: 'Arithmetic · percents', time: '1:30',
-      q: 'The price of a jacket is increased by 20%, then decreased by 25%, and then increased by 10%. What is the overall change from the original price?',
-      choices: ['5% increase', '1% increase', 'No change', '1% decrease', '5% decrease'], ans: 3,
-      concept: 'Successive percent changes',
-      idea: 'Percent changes multiply; they don\'t add. Turn each change into a multiplier: +20% → ×1.20, −25% → ×0.75, +10% → ×1.10.',
-      steps: ['Pick a smart number: let the original price be $100.', 'After +20%: 100 × 1.2 = 120.', 'After −25%: 120 × 0.75 = 90.', 'After +10%: 90 × 1.1 = 99, so the price is 1% lower than at the start.'],
-      tipLabel: 'Trap to avoid', tip: 'Adding 20 − 25 + 10 = +5% is the classic trap answer. Multipliers, always.' },
-  ];
+  const freeHref = user ? '/dashboard#free-session' : '/register?next=free';
   const L = 'ABCDE';
+  const ch = { q: 'What is the value of 1001² − 999²?', choices: ['2,000', '4,000', '20,000', '40,000', '400,000'], ans: 1 };
 %>
+
+<!-- ============ HERO ============ -->
+<section class="v-hero">
+  <div class="v-hero-bg" aria-hidden="true"></div>
+  <div class="wrap v-hero-grid">
+    <div class="v-hero-copy">
+      <p class="v-pill"><span class="v-dot"></span>GMAT Focus Edition · Live Quant coaching on Zoom</p>
+      <h1 class="v-h1">Master GMAT Quant.<br><span class="v-gold">Own every minute.</span></h1>
+      <p class="v-lead">21 questions. 45 minutes. No calculator. We teach the shortcuts, pacing and problem-solving habits that turn the Quant section into your strongest score, in small live classes with a real tutor.</p>
+      <div class="v-cta-row">
+        <a class="btn v-btn-gold" href="<%= freeHref %>">Book a free 1-on-1 session</a>
+        <a class="btn v-btn-ghost" href="/practice-test">Take the free practice test</a>
+      </div>
+      <ul class="v-trust">
+        <li><%- include('partials/icon', { name: 'check' }) %>30 minutes, no payment details</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Set up your bootcamp during the free class</li>
+      </ul>
+    </div>
+
+    <!-- 60-second challenge: works without JavaScript (the solution is a <details>), and becomes interactive with it -->
+    <div class="v-challenge reveal" id="challenge" data-answer="<%= ch.ans %>">
+      <div class="v-ch-head">
+        <span class="v-ch-tag">60-second challenge</span>
+        <span class="v-ch-timer" aria-hidden="true"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.5" class="ring-bg"/><circle cx="18" cy="18" r="15.5" class="ring" id="ch-ring"/></svg><b id="ch-secs">60</b></span>
+      </div>
+      <p class="v-ch-q"><%= ch.q %></p>
+      <div class="v-ch-choices" role="group" aria-label="Answer choices">
+        <% ch.choices.forEach((c, k) => { %><button type="button" class="v-ch-choice" data-k="<%= k %>"><span><%= L[k] %></span><%= c %></button><% }) %>
+      </div>
+      <p class="v-ch-result" id="ch-result" hidden></p>
+      <details class="v-ch-sol" id="ch-sol">
+        <summary>Show the 5-second trick</summary>
+        <p><b>Answer: (B) 4,000.</b> Don't square four-digit numbers. Use the difference of squares: a² − b² = (a + b)(a − b) = 2000 × 2 = 4,000.</p>
+      </details>
+      <a class="v-ch-more" href="/quiz">Try 12 more and get your score range →</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="v-stats reveal">
+      <div><span class="v-stat" data-count="21">21</span><span>Quant questions</span></div>
+      <div><span class="v-stat" data-count="45">45</span><span>minutes, no calculator</span></div>
+      <div><span class="v-stat">2:08</span><span>per question on average</span></div>
+      <div><span class="v-stat">60–90</span><span>Quant section score</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHAT'S TESTED ============ -->
+<section class="v-section" id="gmat-quant">
+  <div class="wrap">
+    <div class="v-head reveal">
+      <p class="eyebrow">The Quant section, decoded</p>
+      <h2 class="v-h2">Four topic areas. One skill that ties them together: <span class="v-under">speed with accuracy.</span></h2>
+      <p class="v-sub">The GMAT Focus Edition has three 45-minute sections taken in any order. Quant is 21 problem-solving questions, computer-adaptive, and you can review and change up to 3 answers.</p>
+    </div>
+    <div class="v-topics">
+      <article class="v-topic reveal"><div class="v-ico"><%- include('partials/icon', { name: 'hash' }) %></div><h3>Arithmetic &amp; number properties</h3><p>Divisibility, primes, remainders, units digits, fractions, percents and ratios.</p></article>
+      <article class="v-topic reveal"><div class="v-ico"><%- include('partials/icon', { name: 'x' }) %></div><h3>Algebra</h3><p>Equations, inequalities, absolute value, exponents, functions and coordinate geometry.</p></article>
+      <article class="v-topic reveal"><div class="v-ico"><%- include('partials/icon', { name: 'route' }) %></div><h3>Word problems</h3><p>Rates and work, mixtures, profit and interest, ages, overlapping sets.</p></article>
+      <article class="v-topic reveal"><div class="v-ico"><%- include('partials/icon', { name: 'chart' }) %></div><h3>Statistics &amp; counting</h3><p>Mean, median, standard deviation, combinations and probability.</p></article>
+    </div>
+    <p class="v-note reveal"><%- include('partials/icon', { name: 'info' }) %>Plane geometry is no longer tested, and Data Sufficiency moved to Data Insights. Many older prep books still teach both.</p>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="v-section v-ivory">
+  <div class="wrap">
+    <div class="v-head reveal">
+      <p class="eyebrow">How it works</p>
+      <h2 class="v-h2">From first question to test day, in three steps.</h2>
+    </div>
+    <ol class="v-steps">
+      <li class="reveal"><span class="v-step-n">01</span><h3>Find your starting point</h3><p>Take the free score check or the full-length practice test. You get a score range, your weak topics and your pacing on every question.</p></li>
+      <li class="reveal"><span class="v-step-n">02</span><h3>Free 1-on-1 Zoom session</h3><p>We work timed questions together, diagnose where you lose points, and build your plan. You also get the option to set up your bootcamp sessions.</p></li>
+      <li class="reveal"><span class="v-step-n">03</span><h3>Train in the bootcamp</h3><p>Four weeks of live classes, timed practice sets and direct tutor support, finishing with a full Quant section review before test day.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ PRACTICE TEST SHOWCASE ============ -->
+<section class="v-section v-dark" id="practice">
+  <div class="wrap v-split">
+    <div class="reveal">
+      <p class="eyebrow v-eyebrow-gold">Free · Full-length</p>
+      <h2 class="v-h2">Feel test day before test day.</h2>
+      <p class="v-sub v-sub-dark">A complete Quant section under real GMAT rules: one question at a time, a 45-minute clock that never stops, bookmarks, and an end-of-section review where you can change up to 3 answers.</p>
+      <ul class="v-checks">
+        <li><%- include('partials/icon', { name: 'check' }) %>Practice score range on the 60–90 scale</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Accuracy by topic and a pacing chart for all 21 questions</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Step-by-step solutions for every question</li>
+      </ul>
+      <div class="v-cta-row"><a class="btn v-btn-gold" href="/practice-test">Start the practice test</a><a class="v-link-light" href="/quiz">Or the 12-question score check →</a></div>
+    </div>
+    <div class="v-mock reveal" aria-hidden="true">
+      <div class="v-mock-bar"><span class="v-mock-brand"><%- include('partials/mark', { m: '#ffffff' }) %>Quantitative Reasoning</span><span>Question 14 of 21</span><span class="v-mock-time">23:41</span></div>
+      <div class="v-mock-body">
+        <p class="v-mock-q">The ratio of boys to girls in a class is 3 : 5. After 6 more boys join, the ratio becomes 3 : 4. How many students were in the class originally?</p>
+        <div class="v-mock-ch"><span>A</span>40</div>
+        <div class="v-mock-ch"><span>B</span>48</div>
+        <div class="v-mock-ch"><span>C</span>56</div>
+        <div class="v-mock-ch on"><span>D</span>64</div>
+        <div class="v-mock-ch"><span>E</span>72</div>
+      </div>
+      <div class="v-mock-foot"><span class="v-mock-bm">Bookmark</span><span class="v-mock-next">Next</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SAMPLE QUESTIONS ============ -->
+<section id="samples" class="v-section">
+  <div class="wrap">
+    <div class="v-head reveal">
+      <p class="eyebrow">Try it now</p>
+      <h2 class="v-h2">Two questions. See how we teach.</h2>
+      <p class="v-sub">Original GMAT-style questions from our bootcamp practice sets. Give yourself about 2 minutes each, no calculator, then open the step-by-step solution.</p>
+    </div>
     <div class="sample-grid">
     <% samples.forEach(s => { %>
-      <article class="card sample">
+      <article class="card sample reveal">
         <div class="sample-meta"><span class="tag tag-class">Sample <%= s.n %></span><span class="small muted"><%= s.topic %> · target <%= s.time %></span></div>
         <p class="sample-q"><%= s.q %></p>
         <ol class="choices">
@@ -124,56 +140,65 @@
       </article>
     <% }) %>
     </div>
-    <div class="quiz-cta-band">
-      <div><h3>Ready for 12 more?</h3><p>Take the free Quant score check: get a practice score range, your weak topics, and full solutions.</p></div>
-      <a class="btn" href="/quiz">Start the score check</a>
-    </div>
-    <p class="center sample-cta">Want 24 more like these, with live walkthroughs? <a href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book your free Zoom session →</a></p>
   </div>
 </section>
 
-<section id="bootcamp" class="section">
-  <div class="wrap bootcamp">
-    <div>
+<!-- ============ BOOTCAMP ============ -->
+<section id="bootcamp" class="v-section v-ivory">
+  <div class="wrap">
+    <div class="v-head reveal">
       <p class="eyebrow">4-week live bootcamp</p>
-      <h2>GMAT Quant Bootcamp</h2>
-      <p class="section-lead">A focused, structured program covering every Quant topic, built around timed practice and the no-calculator strategies that save minutes.</p>
-      <div class="weeks">
-        <div><strong>Week 1</strong> Number properties, arithmetic, mental math shortcuts</div>
-        <div><strong>Week 2</strong> Algebra, inequalities, functions, exponents &amp; roots</div>
-        <div><strong>Week 3</strong> Word problems: rates, work, mixtures, percents, ratios</div>
-        <div><strong>Week 4</strong> Statistics, counting &amp; probability, full timed sections, pacing plan</div>
+      <h2 class="v-h2">A focused plan that covers every Quant topic, in four weeks.</h2>
+    </div>
+    <div class="v-boot">
+      <div class="v-weeks">
+        <div class="v-week reveal"><span class="v-week-n">Week 1</span><h3>Number properties &amp; arithmetic</h3><p>Divisibility, remainders, fractions, percents and the mental-math shortcuts that replace a calculator.</p></div>
+        <div class="v-week reveal"><span class="v-week-n">Week 2</span><h3>Algebra</h3><p>Equations, inequalities, absolute value, functions, exponents and roots.</p></div>
+        <div class="v-week reveal"><span class="v-week-n">Week 3</span><h3>Word problems</h3><p>Rates, work, mixtures, percents, ratios and interest, and how to set them up fast.</p></div>
+        <div class="v-week reveal"><span class="v-week-n">Week 4</span><h3>Statistics, counting &amp; pacing</h3><p>Probability and combinatorics, then full timed sections and your personal pacing plan.</p></div>
       </div>
+      <aside class="v-price reveal">
+        <p class="v-price-tag">GMAT Quant Bootcamp</p>
+        <div class="v-price-num"><%= site.bootcampPrice %></div>
+        <p class="v-price-sub">one-time · 4 weeks · live on Zoom</p>
+        <ul class="v-checks v-checks-dark">
+          <li><%- include('partials/icon', { name: 'check' }) %>8 live Zoom classes (2 per week)</li>
+          <li><%- include('partials/icon', { name: 'check' }) %>Weekly timed practice sets with worked solutions</li>
+          <li><%- include('partials/icon', { name: 'check' }) %>Class recordings in your student area</li>
+          <li><%- include('partials/icon', { name: 'check' }) %>Ask-the-tutor support between classes</li>
+          <li><%- include('partials/icon', { name: 'check' }) %>Full-length Quant review before test day</li>
+        </ul>
+        <a class="btn v-btn-gold btn-block" href="<%= user ? '/dashboard#bootcamp' : '/register' %>">Register for the bootcamp</a>
+        <p class="v-price-note">Not sure yet? <a href="<%= freeHref %>">Start with the free session</a>. During your free class, you'll get the option to set up your bootcamp sessions.</p>
+      </aside>
     </div>
-    <div class="price-card">
-      <div class="price"><%= site.bootcampPrice %></div>
-      <div class="muted">one-time · 4 weeks</div>
-      <ul class="ticks">
-        <li>8 live Zoom classes (2 per week)</li>
-        <li>Weekly timed practice sets with worked solutions</li>
-        <li>Class recordings in your student area</li>
-        <li>Ask-the-tutor questions answered between classes</li>
-        <li>Full-length Quant section review before test day</li>
-      </ul>
-      <a class="btn btn-block" href="<%= user ? '/dashboard#bootcamp' : '/register' %>">Register for the bootcamp</a>
-      <p class="small muted center">Not sure yet? <a href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Start with the free session</a>. During your free class, you'll get the option to set up your bootcamp sessions.</p>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section id="faq" class="v-section">
+  <div class="wrap v-faq">
+    <div class="v-faq-side reveal">
+      <p class="eyebrow">Questions</p>
+      <h2 class="v-h2">GMAT Quant FAQ</h2>
+      <p class="v-sub">Still deciding? A free 30-minute session is the fastest way to get a straight answer about your situation.</p>
+      <a class="btn v-btn-navy" href="<%= freeHref %>">Book a free session</a>
+    </div>
+    <div class="v-faq-list reveal">
+      <% faq.forEach(([q, ans]) => { %><details><summary><%= q %></summary><p><%= ans %></p></details>
+      <% }) %>
     </div>
   </div>
 </section>
 
-<section id="faq" class="section alt">
-  <div class="wrap narrow">
-    <h2>GMAT Quant FAQ</h2>
-    <% faq.forEach(([q, ans]) => { %><details><summary><%= q %></summary><p><%= ans %></p></details>
-    <% }) %>
+<!-- ============ FINAL CTA ============ -->
+<section class="v-final">
+  <div class="wrap v-final-inner reveal">
+    <h2>Your Quant score is the most trainable part of the GMAT.</h2>
+    <p>Start with a free 30-minute session. Leave with a plan.</p>
+    <div class="v-cta-row v-center"><a class="btn v-btn-navy" href="<%= freeHref %>">Book my free session</a><a class="btn v-btn-outline-navy" href="/practice-test">Take the practice test</a></div>
   </div>
 </section>
 
-<section class="section cta-band">
-  <div class="wrap center">
-    <h2>Ready to raise your Quant score?</h2>
-    <a class="btn" href="<%= user ? '/dashboard#free-session' : '/register?next=free' %>">Book my free Zoom session</a>
-  </div>
-</section>
-
+<script src="/site.js" defer></script>
 <%- include('partials/footer') %>

@@ -11,6 +11,7 @@ const db = require('./db');
 const QUIZ = require('./quiz-data');
 const TEST = require('./test-data');
 const SEO = require('./seo');
+const SAMPLES = require('./samples-data');
 // Styles are inlined into every page so school/corporate web filters that break separate CSS requests can't unstyle the site.
 // Minified once at startup (comments and extra whitespace removed) to keep every page small.
 const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'), 'utf8')
@@ -134,7 +135,7 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHea
   handler: (req, res) => res.status(429).render('error', { title: 'Too many attempts', message: 'Please wait 15 minutes and try again.' }) });
 
 // ---------- public ----------
-app.get('/', (req, res) => res.render('home', { title: 'GMAT Quant Coaching', faq: SEO.FAQ }));
+app.get('/', (req, res) => res.render('home', { title: 'GMAT Quant Coaching', faq: SEO.FAQ, samples: SAMPLES }));
 
 app.get('/register', (req, res) => {
   if (req.user) return res.redirect('/dashboard');
