@@ -14,13 +14,20 @@
       <h1 class="v-h1">Master GMAT Quant.<br><span class="v-gold">Own every minute.</span></h1>
       <p class="v-lead">21 questions. 45 minutes. No calculator. We teach the shortcuts, pacing and problem-solving habits that turn the Quant section into your strongest score, in small live classes with a real tutor.</p>
       <div class="v-cta-row">
-        <a class="btn v-btn-gold" href="<%= freeHref %>">Book a free 1-on-1 session</a>
-        <a class="btn v-btn-ghost" href="/practice-test">Take the free practice test</a>
+        <a class="btn v-btn-gold" href="/plan">Find your plan · 2-minute quiz</a>
+        <a class="btn v-btn-ghost" href="<%= freeHref %>">Book a free 1-on-1 session</a>
       </div>
+      <% if (proof.rating) { %>
+      <div class="v-proof-badge">
+        <% if (proof.faces.length) { %><span class="v-faces"><% proof.faces.forEach(t => { %><img src="<%= t.photo %>" alt="<%= t.name %>" width="36" height="36" loading="lazy"><% }) %></span><% } %>
+        <span><span class="v-stars" aria-hidden="true">★★★★★</span><b>Rated <%= proof.rating %>/5</b><% if (proof.ratingCount) { %> by <%= proof.ratingCount %> students<% } %></span>
+      </div>
+      <% } else { %>
       <ul class="v-trust">
         <li><%- include('partials/icon', { name: 'check' }) %>30 minutes, no payment details</li>
         <li><%- include('partials/icon', { name: 'check' }) %>Set up your bootcamp during the free class</li>
       </ul>
+      <% } %>
     </div>
 
     <!-- 60-second challenge: works without JavaScript (the solution is a <details>), and becomes interactive with it -->
@@ -52,6 +59,72 @@
   </div>
 </section>
 
+
+<% if (proof.hasAny) { %>
+<!-- ============ RESULTS (shown only when real social proof is added in /admin) ============ -->
+<section class="v-section v-results" id="results">
+  <div class="wrap">
+    <div class="v-head reveal">
+      <p class="eyebrow">Real students. Real results.</p>
+      <h2 class="v-h2">What our students say.</h2>
+    </div>
+    <% if (proof.video) { %>
+    <div class="v-video reveal">
+      <div class="v-video-frame"><iframe src="https://www.youtube-nocookie.com/embed/<%= proof.video %>?rel=0" title="<%= proof.videoTitle %>" loading="lazy" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+      <p class="v-video-cap"><%= proof.videoTitle %></p>
+    </div>
+    <% } %>
+    <% if (proof.testimonials.length) { %>
+    <div class="v-quotes">
+      <% proof.testimonials.slice(0, 6).forEach(t => { %>
+      <figure class="v-quote reveal">
+        <% if (t.before && t.after) { %><div class="v-gain"><span><%= t.before %></span><%- include('partials/icon', { name: 'arrow' }) %><b><%= t.after %></b></div><% } %>
+        <blockquote>“<%= t.quote %>”</blockquote>
+        <figcaption><% if (t.photo) { %><img src="<%= t.photo %>" alt="" width="44" height="44" loading="lazy"><% } %><span><b><%= t.name %></b><% if (t.detail) { %><br><%= t.detail %><% } %></span></figcaption>
+      </figure>
+      <% }) %>
+    </div>
+    <% } %>
+    <% if (proof.stats.length) { %>
+    <div class="v-results-stats reveal">
+      <% proof.stats.forEach(st => { %><div><span><%= st.value %></span><%= st.label %></div><% }) %>
+    </div>
+    <% } %>
+    <% if (proof.schools.length) { %>
+    <div class="v-schools reveal">
+      <p>Our students are headed to</p>
+      <ul><% proof.schools.forEach(sc => { %><li><%= sc %></li><% }) %></ul>
+    </div>
+    <% } %>
+  </div>
+</section>
+<% } %>
+
+<!-- ============ FEATURES ============ -->
+<section class="v-section v-ivory" id="features">
+  <div class="wrap">
+    <div class="v-head reveal">
+      <p class="eyebrow">Everything included</p>
+      <h2 class="v-h2">Everything you need to master GMAT Quant, in one place.</h2>
+    </div>
+    <div class="v-features">
+      <% [
+        ['video', 'Live classes with a real tutor', 'Eight live Zoom classes. Ask questions in the moment instead of rewinding a video.'],
+        ['users', 'Small groups', 'Small classes, so the tutor knows your weak spots and every question gets answered.'],
+        ['target', 'A plan built around you', 'Your test date, target score and starting level shape what you practice and when.'],
+        ['clock', 'Pacing training', 'Per-question time targets and the 2-minute "move on" rule, practiced in every class.'],
+        ['file', 'Timed practice sets', 'Weekly sets in real GMAT Focus style, each with step-by-step worked solutions.'],
+        ['chart', 'Full-length practice test', 'A 21-question, 45-minute Quant section with a score range, topic breakdown and pacing chart.'],
+        ['chat', 'Ask-the-tutor support', 'Stuck between classes? Send the question from your dashboard and get a written reply.'],
+        ['play', 'Class recordings', 'Missed a class or want a second look? Every recording is in your student area.'],
+        ['calendar', 'Flexible scheduling', 'Set up your bootcamp sessions during your free class, at times that fit your week.'],
+      ].forEach(([ic, h, p]) => { %>
+      <article class="v-feature reveal"><div class="v-ico v-ico-sm"><%- include('partials/icon', { name: ic }) %></div><h3><%= h %></h3><p><%= p %></p></article>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
 <!-- ============ WHAT'S TESTED ============ -->
 <section class="v-section" id="gmat-quant">
   <div class="wrap">
@@ -71,15 +144,15 @@
 </section>
 
 <!-- ============ HOW IT WORKS ============ -->
-<section class="v-section v-ivory">
+<section class="v-section">
   <div class="wrap">
     <div class="v-head reveal">
       <p class="eyebrow">How it works</p>
       <h2 class="v-h2">From first question to test day, in three steps.</h2>
     </div>
     <ol class="v-steps">
-      <li class="reveal"><span class="v-step-n">01</span><h3>Find your starting point</h3><p>Take the free score check or the full-length practice test. You get a score range, your weak topics and your pacing on every question.</p></li>
-      <li class="reveal"><span class="v-step-n">02</span><h3>Free 1-on-1 Zoom session</h3><p>We work timed questions together, diagnose where you lose points, and build your plan. You also get the option to set up your bootcamp sessions.</p></li>
+      <li class="reveal"><span class="v-step-n">01</span><h3>Take the 2-minute plan quiz</h3><p>Five quick questions about your test date, target score and level. You get a personalized plan right away. Want a score too? Take the free practice test.</p><a class="v-step-link" href="/plan">Find your plan →</a></li>
+      <li class="reveal"><span class="v-step-n">02</span><h3>Book a free 1-on-1 Zoom call</h3><p>We work timed questions together, diagnose where you lose points, and confirm your plan. You also get the option to set up your bootcamp sessions.</p><a class="v-step-link" href="<%= freeHref %>">Book the call →</a></li>
       <li class="reveal"><span class="v-step-n">03</span><h3>Train in the bootcamp</h3><p>Four weeks of live classes, timed practice sets and direct tutor support, finishing with a full Quant section review before test day.</p></li>
     </ol>
   </div>
@@ -143,8 +216,38 @@
   </div>
 </section>
 
+<!-- ============ COMPARISON ============ -->
+<section class="v-section v-ivory" id="compare">
+  <div class="wrap">
+    <div class="v-head reveal">
+      <p class="eyebrow">Why MZB Academy</p>
+      <h2 class="v-h2">A better way to prep for GMAT Quant.</h2>
+      <p class="v-sub">Live teaching where it matters most, without the price of private tutoring.</p>
+    </div>
+    <% const Y = '<span class="cmp-y" aria-label="Yes">✓</span>', N = '<span class="cmp-n" aria-label="No">✕</span>';
+       const rows = [
+         ['Live classes with a real tutor', Y, 'Often an extra cost', N],
+         ['Built for the GMAT Focus Quant section', Y, 'Usually', 'Varies'],
+         ['Small groups, questions answered live', Y, 'Varies', N],
+         ['Free 1-on-1 planning session', Y, 'Varies', N],
+         ['Full-length timed Quant test with pacing analysis', Y, 'Usually', 'Varies'],
+         ['Ask-the-tutor support between classes', Y, 'Varies', N],
+         ['Cost of live teaching', '<b>' + site.bootcampPrice + '</b> for 8 live classes', 'Private tutoring often $165–$200+ an hour', 'Low, but no live teaching'],
+       ]; %>
+    <div class="cmp-wrap reveal">
+      <table class="cmp">
+        <thead><tr><th></th><th class="cmp-us"><%- include('partials/mark') %><span>MZB Academy</span></th><th>Big-brand courses</th><th>Self-study books &amp; apps</th></tr></thead>
+        <tbody>
+          <% rows.forEach(r => { %><tr><th scope="row"><%= r[0] %></th><td class="cmp-us"><%- r[1] %></td><td><%- r[2] %></td><td><%- r[3] %></td></tr><% }) %>
+        </tbody>
+      </table>
+    </div>
+    <p class="small muted cmp-note">Big-brand comparisons are general and vary by provider and package. Tutoring rates from published 2026 GMAT prep price reviews.</p>
+  </div>
+</section>
+
 <!-- ============ BOOTCAMP ============ -->
-<section id="bootcamp" class="v-section v-ivory">
+<section id="bootcamp" class="v-section">
   <div class="wrap">
     <div class="v-head reveal">
       <p class="eyebrow">4-week live bootcamp</p>
@@ -194,9 +297,9 @@
 <!-- ============ FINAL CTA ============ -->
 <section class="v-final">
   <div class="wrap v-final-inner reveal">
-    <h2>Your Quant score is the most trainable part of the GMAT.</h2>
+    <h2>Ready to get started? Your Quant score is the most trainable part of the GMAT.</h2>
     <p>Start with a free 30-minute session. Leave with a plan.</p>
-    <div class="v-cta-row v-center"><a class="btn v-btn-navy" href="<%= freeHref %>">Book my free session</a><a class="btn v-btn-outline-navy" href="/practice-test">Take the practice test</a></div>
+    <div class="v-cta-row v-center"><a class="btn v-btn-navy" href="/plan">Find your plan · 2-minute quiz</a><a class="btn v-btn-outline-navy" href="<%= freeHref %>">Book my free session</a></div>
   </div>
 </section>
 

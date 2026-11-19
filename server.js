@@ -12,6 +12,8 @@ const QUIZ = require('./quiz-data');
 const TEST = require('./test-data');
 const SEO = require('./seo');
 const SAMPLES = require('./samples-data');
+const PROOF = require('./proof');
+const QUALIFY = require('./qualify');
 // Styles are inlined into every page so school/corporate web filters that break separate CSS requests can't unstyle the site.
 // Minified once at startup (comments and extra whitespace removed) to keep every page small.
 const INLINE_CSS = fs.readFileSync(path.join(__dirname, 'public', 'styles.css'), 'utf8')
@@ -40,7 +42,11 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1);
 
-app.use(helmet());
+// Security headers. The CSP allows YouTube (privacy-enhanced) embeds and https images for the testimonial section.
+app.use(helmet({ contentSecurityPolicy: { directives: {
+  'img-src': ["'self'", 'data:', 'https:'],
+  'frame-src': ['https://www.youtube-nocookie.com'],
+} } }));
 app.use(express.urlencoded({ extended: false, limit: '50kb' }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' })); // local dev only; Vercel serves /public from its CDN
 // Signed-cookie sessions: stateless, so they work across Vercel's serverless instances.
@@ -88,7 +94,7 @@ app.use((req, res, next) => {
 // browsing, the admin pages and non-page requests aren't counted. No personal data is stored: only totals.
 const STATS_TZ = process.env.STATS_TZ || 'America/New_York';
 const BOT_RE = /bot|crawl|spider|slurp|preview|monitor|lighthouse|headless|curl|wget|python|axios|node-fetch|go-http|scrapy|facebookexternalhit|embedly|whatsapp|vercel/i;
-const TRACKED_PAGES = new Set(['/', '/quiz', '/practice-test', '/register', '/login', '/dashboard', '/free']);
+const TRACKED_PAGES = new Set(['/', '/plan', '/quiz', '/practice-test', '/register', '/login', '/dashboard', '/free', '/privacy', '/terms']);
 const dayKey = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: STATS_TZ }); // YYYY-MM-DD
 // Weeks start on Monday; the key is that Monday's date.
 const weekKey = (day) => { const d = new Date(day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
@@ -135,7 +141,7 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHea
   handler: (req, res) => res.status(429).render('error', { title: 'Too many attempts', message: 'Please wait 15 minutes and try again.' }) });
 
 // ---------- public ----------
-app.get('/', (req, res) => res.render('home', { title: 'GMAT Quant Coaching', faq: SEO.FAQ, samples: SAMPLES }));
+app.get('/', wrap(async (req, res) => res.render('home', { title: 'GMAT Quant Coaching', faq: SEO.FAQ, samples: SAMPLES, proof: PROOF.view(await PROOF.getProof()) })));
 
 app.get('/register', (req, res) => {
   if (req.user) return res.redirect('/dashboard');
@@ -264,6 +270,31 @@ app.get('/practice-test/:id/results', requireAuth, wrap(ownAttempt), wrap(async 
   res.render('test-results', { title: 'Practice test results', attempt: a, questions: TEST });
 }));
 
+// ---------- "Find your plan" quiz (lead capture) ----------
+const planLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
+app.get('/plan', (req, res) => res.render('plan', { title: 'Find your GMAT Quant plan', questions: QUALIFY.QUESTIONS, error: null, form: {} }));
+app.post('/plan', planLimiter, wrap(async (req, res) => {
+  const answers = {};
+  for (const q of QUALIFY.QUESTIONS) { const v = String(req.body[q.id] || ''); if (q.options.some(o => o[0] === v)) answers[q.id] = v; }
+  const form = { ...answers, name: clean(req.body.name, 100), email: clean(req.body.email, 200).toLowerCase(), consent: req.body.consent === 'yes' };
+  let error = null;
+  if (Object.keys(answers).length < QUALIFY.QUESTIONS.length) error = 'Please answer all five questions.';
+  else if (!form.name) error = 'Please enter your first name.';
+  else if (!isEmail(form.email)) error = 'Please enter a valid email so we can send your plan.';
+  if (error) return res.status(400).render('plan', { title: 'Find your GMAT Quant plan', questions: QUALIFY.QUESTIONS, error, form });
+  const lead = await db.insert('leads', { id: db.id(), userId: req.user ? req.user.id : null, name: form.name, email: form.email,
+    consent: form.consent, answers, source: clean(req.session.src, 20), status: 'new', createdAt: db.now() });
+  res.redirect(`/plan/${lead.id}`);
+}));
+app.get('/plan/:id', wrap(async (req, res, next) => {
+  if (!/^[0-9a-f-]{36}$/.test(req.params.id)) return next();
+  const lead = await db.get('leads', req.params.id);
+  if (!lead) return next();
+  res.render('plan-result', { title: 'Your GMAT Quant plan', lead, plan: QUALIFY.plan(lead.answers), label: QUALIFY.label, questions: QUALIFY.QUESTIONS });
+}));
+app.get('/privacy', (req, res) => res.render('privacy', { title: 'Privacy policy' }));
+app.get('/terms', (req, res) => res.render('terms', { title: 'Terms of use' }));
+
 // ---------- free Quant score check ----------
 // A rough, practice-only estimate on the 60–90 Quant scale. Not an official GMAT score.
 function estimateBand(correct) {
@@ -374,7 +405,10 @@ app.get('/admin', requireAuth, requireAdmin, wrap(async (req, res) => {
     pages: Object.entries(pages).filter(([k, v]) => typeof v === 'number').sort((a, b) => b[1] - a[1]),
   };
 
+  const proof = await PROOF.getProof();
+  const leads = await db.all('leads');
   res.render('admin', {
+    proof, leads, planLabel: QUALIFY.label,
     visits,
     title: 'Tutor admin',
     students: users.filter(x => x.role !== 'admin'),
@@ -397,6 +431,34 @@ app.post('/admin/enrollment/:id', requireAuth, requireAdmin, wrap(async (req, re
   if (['pending_payment', 'active', 'cancelled'].includes(req.body.status)) await db.update('enrollments', req.params.id, { status: req.body.status });
   flash(req, 'success', 'Enrollment updated.');
   res.redirect('/admin#enrollments');
+}));
+app.post('/admin/proof', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const f = (k, n = 60) => clean(req.body[k], n);
+  const rating = f('rating', 4);
+  await PROOF.saveProof({
+    rating: /^[0-5](\.\d)?$/.test(rating) ? rating : '', ratingCount: f('ratingCount', 12),
+    statStudents: f('statStudents', 12), statYears: f('statYears', 12), statGain: f('statGain', 16), statGainLabel: f('statGainLabel', 60),
+    videoUrl: PROOF.youtubeId(req.body.videoUrl) ? f('videoUrl', 200) : '', videoTitle: f('videoTitle', 120), schools: clean(req.body.schools, 1200),
+  });
+  flash(req, 'success', 'Social proof updated. It now shows on the home page.');
+  res.redirect('/admin#proof');
+}));
+app.post('/admin/testimonial', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const p = await PROOF.getProof();
+  const t = { id: db.id(), name: clean(req.body.name, 80), detail: clean(req.body.detail, 120), quote: clean(req.body.quote, 600),
+    before: clean(req.body.before, 12), after: clean(req.body.after, 12), photo: safeUrl(req.body.photo), confirmed: req.body.confirmed === 'yes' };
+  if (t.name && t.quote && t.confirmed) { await PROOF.saveProof({ testimonials: [...p.testimonials, t].slice(-24) }); flash(req, 'success', 'Testimonial added.'); }
+  else flash(req, 'error', 'Add a name and a quote, and confirm the student gave permission.');
+  res.redirect('/admin#proof');
+}));
+app.post('/admin/testimonial/:id/delete', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const p = await PROOF.getProof();
+  await PROOF.saveProof({ testimonials: p.testimonials.filter(t => t.id !== req.params.id) });
+  res.redirect('/admin#proof');
+}));
+app.post('/admin/lead/:id', requireAuth, requireAdmin, wrap(async (req, res) => {
+  if (['new', 'contacted', 'booked', 'enrolled', 'not a fit'].includes(req.body.status)) await db.update('leads', req.params.id, { status: req.body.status });
+  res.redirect('/admin#leads');
 }));
 app.post('/admin/post', requireAuth, requireAdmin, wrap(async (req, res) => {
   const title = clean(req.body.title, 150);

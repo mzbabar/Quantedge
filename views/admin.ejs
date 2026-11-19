@@ -50,6 +50,7 @@
     </div>
 
     <div class="kpis">
+      <div class="kpi"><span class="num"><%= leads.length %></span>plan-quiz leads</div>
       <div class="kpi"><span class="num"><%= testAttempts.length %></span>practice tests taken</div>
       <div class="kpi"><span class="num"><%= quizAttempts.length %></span>score checks taken</div>
       <div class="kpi"><span class="num"><%= students.length %></span>students</div>
@@ -123,6 +124,73 @@
           <button class="btn btn-sm">Save reply</button>
         </form>
       <% }) %>
+    </div>
+
+    <div class="card" id="leads">
+      <h2>"Find your plan" leads</h2>
+      <p class="small muted">People who took the 2-minute plan quiz. Emails are for following up about the free session; only email marketing tips to people marked ✓ for consent.</p>
+      <% if (!leads.length) { %><p class="muted">None yet.</p><% } else { %>
+      <div class="table-wrap"><table>
+        <tr><th>Date</th><th>Name</th><th>Email</th><th>Test date</th><th>Target</th><th>Level</th><th>Struggle</th><th>Tips ok</th><th>Status</th></tr>
+        <% leads.forEach(l => { %>
+        <tr>
+          <td><%= fmt(l.createdAt) %></td><td><a href="/plan/<%= l.id %>"><%= l.name %></a></td><td><%= l.email %></td>
+          <td><%= planLabel('date', l.answers.date) %></td><td><%= planLabel('target', l.answers.target) %></td><td><%= planLabel('level', l.answers.level) %></td><td><%= planLabel('struggle', l.answers.struggle) %></td>
+          <td><%= l.consent ? '✓' : '—' %></td>
+          <td><form method="post" action="/admin/lead/<%= l.id %>" class="inline lead-status"><input type="hidden" name="_csrf" value="<%= csrf %>">
+            <select name="status"><% ['new', 'contacted', 'booked', 'enrolled', 'not a fit'].forEach(o => { %><option <%= (l.status || 'new') === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
+            <button class="btn btn-sm">Save</button></form></td>
+        </tr>
+        <% }) %>
+      </table></div>
+      <% } %>
+    </div>
+
+    <div class="card" id="proof">
+      <h2>Social proof on the home page</h2>
+      <p class="small muted">The "Real students. Real results." section, the rating badge and the counters appear on the home page only after you fill them in. Use real, verifiable information only, and only quote students who gave you permission. Fake reviews or made-up results are illegal under FTC rules.</p>
+      <form method="post" action="/admin/proof" class="form proof-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="row3">
+          <label>Average rating (0–5)<input name="rating" value="<%= proof.rating %>" placeholder="e.g. 4.9"></label>
+          <label>Number of ratings<input name="ratingCount" value="<%= proof.ratingCount %>" placeholder="e.g. 37"></label>
+          <label>Students coached<input name="statStudents" value="<%= proof.statStudents %>" placeholder="e.g. 120+"></label>
+        </div>
+        <div class="row3">
+          <label>Years teaching<input name="statYears" value="<%= proof.statYears %>" placeholder="e.g. 10"></label>
+          <label>Results number<input name="statGain" value="<%= proof.statGain %>" placeholder="e.g. +8"></label>
+          <label>Results label<input name="statGainLabel" value="<%= proof.statGainLabel %>" placeholder="e.g. average Quant score gain"></label>
+        </div>
+        <div class="row2">
+          <label>Student video (YouTube link)<input name="videoUrl" value="<%= proof.videoUrl %>" placeholder="https://www.youtube.com/watch?v=…"></label>
+          <label>Video caption<input name="videoTitle" value="<%= proof.videoTitle %>" placeholder="How Sara raised her Quant score from 74 to 83"></label>
+        </div>
+        <label>Schools your students were admitted to (one per line)<textarea name="schools" rows="3" placeholder="Wharton&#10;INSEAD"><%= proof.schools %></textarea></label>
+        <button class="btn">Save</button>
+      </form>
+
+      <h3 style="margin-top:22px">Testimonials (<%= proof.testimonials.length %>)</h3>
+      <% proof.testimonials.forEach(t => { %>
+      <div class="admin-row" style="grid-template-columns:1fr auto">
+        <div class="who"><strong><%= t.name %></strong><% if (t.before && t.after) { %> · <%= t.before %> → <%= t.after %><% } %><br><span class="small muted">“<%= t.quote.slice(0, 140) %><%= t.quote.length > 140 ? '…' : '' %>”</span></div>
+        <form method="post" action="/admin/testimonial/<%= t.id %>/delete"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm btn-ghost">Remove</button></form>
+      </div>
+      <% }) %>
+      <form method="post" action="/admin/testimonial" class="form proof-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="row3">
+          <label>Student name<input name="name" maxlength="80" placeholder="Sara K." required></label>
+          <label>Score before (optional)<input name="before" maxlength="12" placeholder="Q74"></label>
+          <label>Score after (optional)<input name="after" maxlength="12" placeholder="Q83"></label>
+        </div>
+        <div class="row2">
+          <label>Detail (optional)<input name="detail" maxlength="120" placeholder="Admitted to INSEAD, 2026"></label>
+          <label>Photo link (optional, https)<input name="photo" type="url" placeholder="https://…/sara.jpg"></label>
+        </div>
+        <label>Quote<textarea name="quote" rows="3" maxlength="600" required></textarea></label>
+        <label class="consent"><input type="checkbox" name="confirmed" value="yes" required> This is a real student who gave me permission to publish their words, name and photo.</label>
+        <button class="btn">Add testimonial</button>
+      </form>
     </div>
 
     <div class="card" id="tests">

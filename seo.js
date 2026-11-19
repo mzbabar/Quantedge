@@ -31,6 +31,13 @@ const PAGES = {
     description: 'Take a free, timed GMAT Focus Quant practice test: 21 questions in 45 minutes with real test rules, a score estimate, topic breakdown, pacing chart and solutions.',
     priority: '0.9', changefreq: 'monthly',
   },
+  '/plan': {
+    title: 'Find Your GMAT Quant Plan: Free 2-Minute Quiz | MZB Academy',
+    description: 'Answer five quick questions about your test date, target score and Quant level, and get a personalized GMAT Quant study plan plus a free 1-on-1 session.',
+    priority: '0.9', changefreq: 'monthly',
+  },
+  '/privacy': { title: 'Privacy Policy | MZB Academy', description: 'How MZB Academy collects, uses and protects your information.', priority: '0.2', changefreq: 'yearly' },
+  '/terms': { title: 'Terms of Use | MZB Academy', description: 'The terms for using the MZB Academy website, practice tests and GMAT Quant courses.', priority: '0.2', changefreq: 'yearly' },
   '/quiz': {
     title: 'Free GMAT Quant Score Check: 12 Practice Questions | MZB Academy',
     description: 'Check your GMAT Quant level in about 25 minutes. 12 GMAT-style questions with a practice score range, your weak topics and step-by-step solutions. No sign-up.',
@@ -38,7 +45,7 @@ const PAGES = {
   },
 };
 // Anything under these paths is private or thin, so it's kept out of search and AI indexes.
-const PRIVATE = ['/admin', '/dashboard', '/login', '/register', '/free', '/practice-test/', '/quiz/', '/enroll', '/questions', '/free-session', '/logout'];
+const PRIVATE = ['/plan/', '/admin', '/dashboard', '/login', '/register', '/free', '/practice-test/', '/quiz/', '/enroll', '/questions', '/free-session', '/logout'];
 const isPrivate = (p) => PRIVATE.some(x => (x.endsWith('/') ? p.startsWith(x) : p === x || p.startsWith(x + '/')));
 
 function baseUrl(req) {
@@ -121,7 +128,7 @@ function routes(app, site) {
     const base = baseUrl(req);
     res.type('text/plain').set('Cache-Control', 'public, max-age=3600');
     if (IS_PREVIEW) return res.send('User-agent: *\nDisallow: /\n');
-    const disallow = ['/admin', '/dashboard', '/login', '/register', '/free', '/practice-test/', '/quiz/result/'].map(p => `Disallow: ${p}`).join('\n');
+    const disallow = ['/plan/', '/admin', '/dashboard', '/login', '/register', '/free', '/practice-test/', '/quiz/result/'].map(p => `Disallow: ${p}`).join('\n');
     res.send([
       '# MZB Academy: search engines and AI assistants are welcome on public pages.',
       'User-agent: *', 'Allow: /', disallow, '',
@@ -150,6 +157,7 @@ function routes(app, site) {
 - [Home: GMAT Quant coaching and bootcamp](${base}/): what the GMAT Quant section tests, how coaching works, the 4-week bootcamp curriculum and price, FAQ.
 - [Free full-length GMAT Quant practice test](${base}/practice-test): 21 questions, 45 minutes, real test rules (one question at a time, bookmarks, review and edit up to 3 answers). Free account required.
 - [Free GMAT Quant score check](${base}/quiz): 12 timed questions with a practice score range, weak topics and step-by-step solutions. No sign-up.
+- [Find your GMAT Quant plan](${base}/plan): a 2-minute, 5-question quiz that returns a personalized study plan.
 - [Book a free 1-on-1 Zoom session](${base}/free): During your free class, you'll get the option to set up your bootcamp sessions.
 
 ## GMAT Quant facts (GMAT Focus Edition)

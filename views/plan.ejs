@@ -1,0 +1,49 @@
+<%- include('partials/header') %>
+<section class="plan-wrap">
+  <div class="wrap plan-grid">
+    <aside class="plan-side">
+      <p class="eyebrow v-eyebrow-gold">Free · 2 minutes</p>
+      <h1 class="v-h2 plan-h1">Find your GMAT Quant plan</h1>
+      <p class="plan-lead">Answer five quick questions. You'll get a personalized plan for your test date and target score, and an invitation to a free 1-on-1 session where you can set up your bootcamp.</p>
+      <ul class="v-checks">
+        <li><%- include('partials/icon', { name: 'check' }) %>Built around your test date</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Focused on your weakest areas</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>No payment details</li>
+      </ul>
+    </aside>
+
+    <form method="post" action="/plan" class="plan-card" id="plan-form" novalidate>
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <div class="plan-progress" aria-hidden="true"><span id="plan-bar"></span></div>
+      <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+
+      <% questions.forEach((q, i) => { %>
+      <fieldset class="plan-step" data-step="<%= i %>">
+        <legend><span class="plan-count">Question <%= i + 1 %> of <%= questions.length %></span><%= q.q %></legend>
+        <div class="plan-options">
+          <% q.options.forEach(([v, text]) => { %>
+          <label class="plan-option"><input type="radio" name="<%= q.id %>" value="<%= v %>" <%= form[q.id] === v ? 'checked' : '' %>><span><%= text %></span></label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <% }) %>
+
+      <fieldset class="plan-step" data-step="<%= questions.length %>">
+        <legend><span class="plan-count">Last step</span>Where should we send your plan?</legend>
+        <div class="row2">
+          <label class="plan-field">First name<input name="name" maxlength="100" autocomplete="given-name" value="<%= form.name || '' %>" required></label>
+          <label class="plan-field">Email<input type="email" name="email" autocomplete="email" value="<%= form.email || (user ? user.email : '') %>" required></label>
+        </div>
+        <label class="consent"><input type="checkbox" name="consent" value="yes" <%= form.consent ? 'checked' : '' %>> Email me my plan and occasional GMAT Quant tips. You can unsubscribe any time.</label>
+        <button class="btn v-btn-gold btn-block">See my plan</button>
+        <p class="small muted center">We use your email only to send your plan and follow up about your free session. <a href="/privacy">Privacy policy</a></p>
+      </fieldset>
+
+      <div class="plan-nav" id="plan-nav" hidden>
+        <button type="button" class="link" id="plan-back">← Back</button>
+      </div>
+    </form>
+  </div>
+</section>
+<script src="/plan.js" defer></script>
+<%- include('partials/footer') %>

@@ -1,0 +1,30 @@
+<%- include('partials/header') %>
+<% const freeHref = user ? '/dashboard#free-session' : '/register?next=free'; %>
+<section class="plan-wrap">
+  <div class="wrap narrow">
+    <div class="plan-result">
+      <p class="eyebrow v-eyebrow-gold">Your plan, <%= lead.name %></p>
+      <h1 class="v-h2 plan-h1"><%= plan.headline %></h1>
+      <div class="plan-answers">
+        <% questions.forEach(q => { %><div><span><%= q.q.replace('?', '') %></span><b><%= label(q.id, lead.answers[q.id]) %></b></div><% }) %>
+      </div>
+
+      <div class="plan-fit"><%- include('partials/icon', { name: 'check' }) %><div><b>Recommended for you</b><br><%= plan.fit %></div></div>
+
+      <h2 class="plan-sub">Your next steps</h2>
+      <ol class="plan-steps-list">
+        <% plan.steps.forEach(st => { %><li><%= st %></li><% }) %>
+      </ol>
+
+      <div class="plan-cta">
+        <div>
+          <h3>Book your free 1-on-1 Zoom session</h3>
+          <p>30 minutes with your tutor to review this plan, work a few timed questions together, and set up your bootcamp sessions if it's the right fit.</p>
+        </div>
+        <a class="btn v-btn-gold" href="<%= freeHref %>">Book my free session</a>
+      </div>
+      <p class="center small muted">Want your starting score first? <a href="/practice-test">Take the free practice test</a> or the <a href="/quiz">12-question score check</a>.</p>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

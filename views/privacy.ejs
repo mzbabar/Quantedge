@@ -1,0 +1,28 @@
+<%- include('partials/header') %>
+<section class="section"><div class="wrap narrow legal">
+  <p class="eyebrow">Legal</p>
+  <h1>Privacy policy</h1>
+  <p class="muted">Last updated: <%= new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %></p>
+  <p><%= site.name %> ("we", "us") runs this website to offer GMAT Quant coaching, free practice tools and a live bootcamp. This policy explains what we collect and why.</p>
+  <h2>What we collect</h2>
+  <ul>
+    <li><b>Account details</b> you give us: name, email, optional phone number, planned test date and target score, and a password (stored only as a secure hash).</li>
+    <li><b>Your answers and results</b> from the score check, the practice test and the "Find your plan" quiz.</li>
+    <li><b>Session and booking details</b>: free-session requests, bootcamp registration and questions you send your tutor.</li>
+    <li><b>Email for updates</b>, only if you tick the consent box.</li>
+    <li><b>Visit totals</b>: we count page views and visits in aggregate. We don't use advertising trackers or sell data.</li>
+  </ul>
+  <h2>Cookies</h2>
+  <p>We use one essential cookie to keep you signed in, protect forms and count visits. We do not use advertising or third-party tracking cookies. If a page shows a student video, it is embedded from YouTube in privacy-enhanced mode.</p>
+  <h2>How we use your information</h2>
+  <p>To run your account and lessons, schedule sessions, show your results, send the plan or updates you asked for, and improve our teaching. We never sell your personal information.</p>
+  <h2>Who processes it</h2>
+  <p>The site is hosted on Vercel and data is stored in a Neon Postgres database. If you pay online, payment is handled by our payment provider (for example Stripe); we never see or store your card details.</p>
+  <h2>Your choices</h2>
+  <p>You can ask us to access, correct or delete your information, or to stop emails, at any time by writing to <a href="mailto:<%= site.contactEmail %>"><%= site.contactEmail %></a>. We keep account data while your account is active and delete it on request.</p>
+  <h2>Children</h2>
+  <p>This site is intended for adults preparing for graduate business school admissions and is not directed at children under 16.</p>
+  <h2>Contact</h2>
+  <p>Questions about privacy: <a href="mailto:<%= site.contactEmail %>"><%= site.contactEmail %></a>.</p>
+</div></section>
+<%- include('partials/footer') %>
