@@ -1,7 +1,55 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "node build.mjs",
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/formula-sheet",
+      "destination": "/series-7-formula-sheet",
+      "permanent": true
+    },
+    {
+      "source": "/glossary",
+      "destination": "/series-7-glossary",
+      "permanent": true
+    },
+    {
+      "source": "/updates",
+      "destination": "/series-7-updates",
+      "permanent": true
+    },
+    {
+      "source": "/practice-questions",
+      "destination": "/series-7-practice-questions",
+      "permanent": true
+    },
+    {
+      "source": "/options",
+      "destination": "/series-7-options-cheat-sheet",
+      "permanent": true
+    },
+    {
+      "source": "/index",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/go/:name",
+      "destination": "/api/go?name=:name"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api/stats"
+    }
+  ],
   "headers": [
     {
-      "source": "/fonts/(.*)",
+      "source": "/assets/(.*)\\.(css|js)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -10,7 +58,29 @@
       ]
     },
     {
-      "source": "/brand/(.*)",
+      "source": "/assets/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(llms.txt|llms-full.txt)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)\\.(jpg|webp|png)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -19,11 +89,23 @@
       ]
     },
     {
-      "source": "/favicon.svg",
+      "source": "/(.*)",
       "headers": [
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=604800"
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
         }
       ]
     }
