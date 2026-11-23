@@ -83,13 +83,22 @@
       <h2>Bootcamp registrations</h2>
       <% if (!enrollments.length) { %><p class="muted">None yet.</p><% } %>
       <% enrollments.forEach(e => { %>
+        <div class="row-with-del">
         <form method="post" action="/admin/enrollment/<%= e.id %>" class="admin-row">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
           <div class="who"><strong><%= e.student.name %></strong><br><span class="small muted"><%= e.student.email %> · <%= e.cohort %> · <%= fmt(e.createdAt) %></span></div>
           <select name="status"><% ['pending_payment','active','cancelled'].forEach(o => { %><option <%= e.status === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
           <button class="btn btn-sm">Save</button>
         </form>
+        <details class="del"><summary>Delete</summary><form method="post" action="/admin/enrollment/<%= e.id %>/delete" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm btn-danger">Yes, delete</button></form></details>
+        </div>
       <% }) %>
+      <% if (enrollments.length) { %>
+      <details class="del del-all"><summary>Clear all bootcamp registrations…</summary>
+        <form method="post" action="/admin/enrollments/clear" class="clear-form"><input type="hidden" name="_csrf" value="<%= csrf %>">
+          <label class="consent"><input type="checkbox" name="confirm" value="yes" required> I understand this permanently deletes all <%= enrollments.length %> bootcamp registrations. This can't be undone.</label>
+          <button class="btn btn-sm btn-danger">Delete all</button></form></details>
+      <% } %>
     </div>
 
     <div class="card" id="posts">
@@ -132,7 +141,7 @@
       <p class="small muted">People who took the 2-minute score plan or downloaded the free Playbook. Follow up about the free call. Emails are for following up about the free session; only email marketing tips to people marked ✓ for consent.</p>
       <% if (!leads.length) { %><p class="muted">None yet.</p><% } else { %>
       <div class="table-wrap"><table>
-        <tr><th>Date</th><th>Source</th><th>Name</th><th>Email</th><th>Goal</th><th>Quant now</th><th>Test date</th><th>Challenge</th><th>Tips ok</th><th>Status</th></tr>
+        <tr><th>Date</th><th>Source</th><th>Name</th><th>Email</th><th>Goal</th><th>Quant now</th><th>Test date</th><th>Challenge</th><th>Tips ok</th><th>Status</th><th></th></tr>
         <% leads.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).forEach(l => { const a = l.answers || {}; const isGuide = l.type === 'guide'; %>
         <tr>
           <td><%= fmt(l.createdAt) %></td><td><span class="tag"><%= isGuide ? 'Playbook' : 'Score plan' %></span></td>
@@ -142,9 +151,16 @@
           <td><form method="post" action="/admin/lead/<%= l.id %>" class="inline lead-status"><input type="hidden" name="_csrf" value="<%= csrf %>">
             <select name="status"><% ['new', 'contacted', 'booked', 'enrolled', 'not a fit'].forEach(o => { %><option <%= (l.status || 'new') === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
             <button class="btn btn-sm">Save</button></form></td>
+          <td><details class="del"><summary>Delete</summary><form method="post" action="/admin/lead/<%= l.id %>/delete" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm btn-danger">Yes, delete</button></form></details></td>
         </tr>
         <% }) %>
       </table></div>
+      <% } %>
+      <% if (leads.length) { %>
+      <details class="del del-all"><summary>Clear all leads…</summary>
+        <form method="post" action="/admin/leads/clear" class="clear-form"><input type="hidden" name="_csrf" value="<%= csrf %>">
+          <label class="consent"><input type="checkbox" name="confirm" value="yes" required> I understand this permanently deletes all <%= leads.length %> leads. This can't be undone.</label>
+          <button class="btn btn-sm btn-danger">Delete all</button></form></details>
       <% } %>
     </div>
 

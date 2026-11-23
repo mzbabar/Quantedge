@@ -550,6 +550,23 @@ app.post('/admin/testimonial/:id/delete', requireAuth, requireAdmin, wrap(async 
   await PROOF.saveProof({ testimonials: p.testimonials.filter(t => t.id !== req.params.id) });
   res.redirect('/admin#proof');
 }));
+// Delete one lead / registration, or clear them all (clear-all needs the confirm checkbox).
+app.post('/admin/lead/:id/delete', requireAuth, requireAdmin, wrap(async (req, res) => {
+  await db.remove('leads', req.params.id); flash(req, 'success', 'Lead deleted.'); res.redirect('/admin#leads');
+}));
+app.post('/admin/leads/clear', requireAuth, requireAdmin, wrap(async (req, res) => {
+  if (req.body.confirm !== 'yes') { flash(req, 'error', 'Tick the confirmation box to delete all leads.'); return res.redirect('/admin#leads'); }
+  const all = await db.all('leads'); for (const l of all) await db.remove('leads', l.id);
+  flash(req, 'success', `Deleted ${all.length} leads.`); res.redirect('/admin#leads');
+}));
+app.post('/admin/enrollment/:id/delete', requireAuth, requireAdmin, wrap(async (req, res) => {
+  await db.remove('enrollments', req.params.id); flash(req, 'success', 'Bootcamp registration deleted.'); res.redirect('/admin#enrollments');
+}));
+app.post('/admin/enrollments/clear', requireAuth, requireAdmin, wrap(async (req, res) => {
+  if (req.body.confirm !== 'yes') { flash(req, 'error', 'Tick the confirmation box to delete all bootcamp registrations.'); return res.redirect('/admin#enrollments'); }
+  const all = await db.all('enrollments'); for (const e of all) await db.remove('enrollments', e.id);
+  flash(req, 'success', `Deleted ${all.length} bootcamp registrations.`); res.redirect('/admin#enrollments');
+}));
 app.post('/admin/lead/:id', requireAuth, requireAdmin, wrap(async (req, res) => {
   if (['new', 'contacted', 'booked', 'enrolled', 'not a fit'].includes(req.body.status)) await db.update('leads', req.params.id, { status: req.body.status });
   res.redirect('/admin#leads');

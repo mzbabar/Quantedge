@@ -832,3 +832,16 @@ div.t-big.t-initial { display: grid; }
 @media (max-width: 900px) { .t-big { max-width: 380px; aspect-ratio: 1 / 1; } }
 .hp { position: absolute !important; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .g-form select, .g-form textarea { display: block; width: 100%; margin-top: 6px; }
+/* Admin delete controls (no JS: a <details> asks for a second click) */
+.btn-danger { background: #B42318; color: #fff; box-shadow: none; }
+.btn-danger:hover { background: #912018; }
+.del summary { cursor: pointer; color: #B42318; font-size: .85rem; font-weight: 600; list-style: none; white-space: nowrap; }
+.del summary::-webkit-details-marker { display: none; }
+.del[open] summary { margin-bottom: 6px; color: var(--muted); }
+.del-all { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.clear-form { display: grid; gap: 10px; justify-items: start; margin-top: 8px; }
+.row-with-del { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+.row-with-del .admin-row { flex: 1 1 520px; border-bottom: 0; }
+details.del { border: 0; background: none; padding: 0; margin: 0; border-radius: 0; box-shadow: none; }
+details.del-all { border-top: 1px dashed var(--line); padding-top: 14px; margin-top: 16px; }
+details.del-all summary { color: #B42318; }
