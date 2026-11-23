@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+<section class="g-hero">
+  <div class="wrap g-grid">
+    <div>
+      <p class="eyebrow v-eyebrow-gold">Contact us</p>
+      <h1 class="g-h1">Questions? <em class="serif">We're here.</em></h1>
+      <p class="g-lead">Ask about the free 1-on-1 call, the 4-week bootcamp, payment or your account. We reply by email, usually within one business day.</p>
+      <ul class="v-checks">
+        <li><%- include('partials/icon', { name: 'chat' }) %>Email: <a class="v-link-light" href="mailto:<%= site.contactEmail %>"><%= site.contactEmail %></a></li>
+        <li><%- include('partials/icon', { name: 'target' }) %><span>Not sure where to start? <a class="v-link-light" href="/plan">Get your free GMAT score plan</a></span></li>
+      </ul>
+    </div>
+    <form method="post" action="/contact" class="g-form">
+      <input type="hidden" name="_csrf" value="<%= csrf %>">
+      <% if (sent) { %>
+        <h2>Message sent. Thank you!</h2>
+        <p class="muted">We'll reply to your email soon. Meanwhile, you can <a href="/plan">get your score plan</a> or <a href="/guide">download the free Playbook</a>.</p>
+      <% } else { %>
+        <h2>Send us a message</h2>
+        <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+        <label class="plan-field">Name<input name="name" maxlength="100" autocomplete="name" value="<%= form.name || '' %>" required></label>
+        <label class="plan-field">Email<input type="email" name="email" autocomplete="email" value="<%= form.email || '' %>" required></label>
+        <label class="plan-field">Topic<select name="topic"><% topics.forEach(t => { %><option <%= form.topic === t ? 'selected' : '' %>><%= t %></option><% }) %></select></label>
+        <label class="plan-field">Message<textarea name="message" rows="5" maxlength="4000" required><%= form.message || '' %></textarea></label>
+        <label class="hp" aria-hidden="true">Website<input name="website" tabindex="-1" autocomplete="off"></label>
+        <button class="btn v-btn-gold btn-block">Send message</button>
+        <p class="small muted center">We only use your details to reply. <a href="/privacy">Privacy</a></p>
+      <% } %>
+    </form>
+  </div>
+</section>
+<%- include('partials/footer') %>

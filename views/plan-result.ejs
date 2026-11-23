@@ -1,30 +1,67 @@
 <%- include('partials/header') %>
-<% const freeHref = user ? '/dashboard#free-session' : '/register?next=free'; %>
-<section class="plan-wrap">
+<%
+  const callHref = user ? '/dashboard#free-session' : '/register?next=free&lead=' + lead.id;
+  const pct = (q) => Math.max(0, Math.min(100, (q - 60) / 30 * 100));
+%>
+<section class="pr-hero">
   <div class="wrap narrow">
-    <div class="plan-result">
-      <p class="eyebrow v-eyebrow-gold">Your plan, <%= lead.name %></p>
-      <h1 class="v-h2 plan-h1"><%= plan.headline %></h1>
+    <p class="eyebrow v-eyebrow-gold">Your GMAT score plan · <%= lead.name %></p>
+    <h1 class="pr-h1">To reach <em class="serif"><%= plan.goalLabel %></em>, aim for <span class="pr-big">Q<%= plan.lo %>–<%= plan.hi %></span> in Quant.</h1>
+    <p class="pr-sub">That's roughly the <b><%= plan.pLo %>th–<%= plan.pHi %>th percentile</b> of GMAT Quant test-takers.</p>
+
+    <div class="pr-meter" aria-label="Quant score scale from 60 to 90">
+      <div class="pr-track">
+        <span class="pr-target" style="left:<%= pct(plan.lo) %>%;width:<%= pct(plan.hi) - pct(plan.lo) %>%"></span>
+        <% if (plan.current) { %><span class="pr-you" style="left:<%= pct(plan.current) %>%"><b>You ≈ <%= plan.current %></b></span><% } %>
+      </div>
+      <div class="pr-scale"><span>60</span><span>70</span><span>80</span><span>90</span></div>
+      <p class="pr-legend"><span class="pr-sw"></span>Your target range<% if (plan.current) { %> · <span class="pr-dot"></span>Your latest Quant score<% } %></p>
+    </div>
+  </div>
+</section>
+
+<section class="v-section pr-body">
+  <div class="wrap narrow">
+    <div class="pr-cards">
+      <div class="pr-card pr-gap-<%= plan.gapLevel %>"><span class="pr-k">Your gap</span><p><%= plan.gapText %></p></div>
+      <div class="pr-card"><span class="pr-k">Your timeline</span><p><%= plan.timing %></p></div>
+      <div class="pr-card"><span class="pr-k">Study time</span><p><%= plan.hours %></p></div>
+      <% if (plan.focus) { %><div class="pr-card"><span class="pr-k">Your focus</span><p><%= plan.focus %></p></div><% } %>
+    </div>
+
+    <% if (cohort) { %>
+    <div class="pr-cohort">
+      <%- include('partials/icon', { name: 'calendar' }) %>
+      <div><b>Next bootcamp cohort starts <%= cohort.date %></b><% if (cohort.schedule) { %> · <%= cohort.schedule %><% } %><br>
+      <span><%= cohort.full ? 'This cohort is full. Ask about the next one on your call.' : (cohort.left !== null ? cohort.left + ' of ' + cohort.seats + ' seats left. Small groups only.' : 'Small groups only.') %></span></div>
+    </div>
+    <% } %>
+
+    <h2 class="pr-h2">Your next <em class="serif">steps</em></h2>
+    <ol class="pr-steps">
+      <% plan.steps.forEach(st => { %><li><b><%= st.t %></b><span><%= st.d %></span></li><% }) %>
+    </ol>
+
+    <div class="pr-cta">
+      <div>
+        <p class="eyebrow v-eyebrow-gold">Recommended next step</p>
+        <h3>Talk through this plan on a free 1-on-1 call</h3>
+        <p>30 minutes on Zoom with your tutor. We'll check your target, work a few timed questions together and map the fastest route to test day. If it's a fit, you can set up your bootcamp sessions on the call.</p>
+        <div class="v-cta-row">
+          <a class="btn v-btn-gold" href="<%= callHref %>"><%= user ? 'Book my free call' : 'Create my free account & book my call' %></a>
+          <a class="btn v-btn-ghost" href="/downloads/mzb-gmat-quant-playbook.pdf" download>Download the free Playbook</a>
+        </div>
+        <p class="pr-micro">No payment details · Takes 1 minute to set up</p>
+      </div>
+    </div>
+
+    <details class="pr-answers">
+      <summary>Your answers</summary>
       <div class="plan-answers">
         <% questions.forEach(q => { %><div><span><%= q.q.replace('?', '') %></span><b><%= label(q.id, lead.answers[q.id]) %></b></div><% }) %>
       </div>
-
-      <div class="plan-fit"><%- include('partials/icon', { name: 'check' }) %><div><b>Recommended for you</b><br><%= plan.fit %></div></div>
-
-      <h2 class="plan-sub">Your next steps</h2>
-      <ol class="plan-steps-list">
-        <% plan.steps.forEach(st => { %><li><%= st %></li><% }) %>
-      </ol>
-
-      <div class="plan-cta">
-        <div>
-          <h3>Book your free 1-on-1 Zoom session</h3>
-          <p>30 minutes with your tutor to review this plan, work a few timed questions together, and set up your bootcamp sessions if it's the right fit.</p>
-        </div>
-        <a class="btn v-btn-gold" href="<%= freeHref %>">Book my free session</a>
-      </div>
-      <p class="center small muted">Want your starting score first? <a href="/practice-test">Take the free practice test</a> or the <a href="/quiz">12-question score check</a>.</p>
-    </div>
+    </details>
+    <p class="small muted center">Target ranges are a rough guide, not an official conversion; GMAC doesn't publish one. They're based on published GMAT Focus score examples and 2026 Quant percentiles. Don't know your current level? <a href="/practice-test">Take the free practice test</a>.</p>
   </div>
 </section>
 <%- include('partials/footer') %>

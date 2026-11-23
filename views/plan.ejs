@@ -3,12 +3,12 @@
   <div class="wrap plan-grid">
     <aside class="plan-side">
       <p class="eyebrow v-eyebrow-gold">Free · 2 minutes</p>
-      <h1 class="v-h2 plan-h1">Find your GMAT Quant plan</h1>
-      <p class="plan-lead">Answer five quick questions. You'll get a personalized plan for your test date and target score, and an invitation to a free 1-on-1 session where you can set up your bootcamp.</p>
+      <h1 class="v-h2 plan-h1">Get your GMAT <em class="serif">score plan</em></h1>
+      <p class="plan-lead">Six quick questions. You'll see the Quant score you need for your goal, how far you are from it, and how much time you have. Then book a free 1-on-1 call to talk it through.</p>
       <ul class="v-checks">
-        <li><%- include('partials/icon', { name: 'check' }) %>Built around your test date</li>
-        <li><%- include('partials/icon', { name: 'check' }) %>Focused on your weakest areas</li>
-        <li><%- include('partials/icon', { name: 'check' }) %>No payment details</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Your target Quant score and percentile</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Your gap and timeline to test day</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>Free. No payment details</li>
       </ul>
     </aside>
 
@@ -29,13 +29,13 @@
       <% }) %>
 
       <fieldset class="plan-step" data-step="<%= questions.length %>">
-        <legend><span class="plan-count">Last step</span>Where should we send your plan?</legend>
+        <legend><span class="plan-count">Last step</span>Where should we send your score plan?</legend>
         <div class="row2">
           <label class="plan-field">First name<input name="name" maxlength="100" autocomplete="given-name" value="<%= form.name || '' %>" required></label>
           <label class="plan-field">Email<input type="email" name="email" autocomplete="email" value="<%= form.email || (user ? user.email : '') %>" required></label>
         </div>
         <label class="consent"><input type="checkbox" name="consent" value="yes" <%= form.consent ? 'checked' : '' %>> Email me my plan and occasional GMAT Quant tips. You can unsubscribe any time.</label>
-        <button class="btn v-btn-gold btn-block">See my plan</button>
+        <button class="btn v-btn-gold btn-block">Show my score plan</button>
         <p class="small muted center">We use your email only to send your plan and follow up about your free session. <a href="/privacy">Privacy policy</a></p>
       </fieldset>
 

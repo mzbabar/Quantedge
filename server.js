@@ -11,6 +11,7 @@ const db = require('./db');
 const QUIZ = require('./quiz-data');
 const TEST = require('./test-data');
 const SEO = require('./seo');
+const MAIL = require('./mailer');
 const SAMPLES = require('./samples-data');
 const PROOF = require('./proof');
 const QUALIFY = require('./qualify');
@@ -33,7 +34,7 @@ const SITE = {
   name: process.env.SITE_NAME || 'MZB Academy',
   bootcampPrice: formatPrice(process.env.BOOTCAMP_PRICE || '349'),
   paymentLink: process.env.PAYMENT_LINK || '', // e.g. a Stripe Payment Link
-  contactEmail: process.env.CONTACT_EMAIL || 'hello@example.com',
+  contactEmail: process.env.CONTACT_EMAIL || 'support@mzbacademy.com',
 };
 if (IS_PROD && !process.env.SESSION_SECRET) console.error('WARNING: SESSION_SECRET is not set. Set it in Vercel → Settings → Environment Variables.');
 
@@ -94,7 +95,7 @@ app.use((req, res, next) => {
 // browsing, the admin pages and non-page requests aren't counted. No personal data is stored: only totals.
 const STATS_TZ = process.env.STATS_TZ || 'America/New_York';
 const BOT_RE = /bot|crawl|spider|slurp|preview|monitor|lighthouse|headless|curl|wget|python|axios|node-fetch|go-http|scrapy|facebookexternalhit|embedly|whatsapp|vercel/i;
-const TRACKED_PAGES = new Set(['/', '/plan', '/quiz', '/practice-test', '/register', '/login', '/dashboard', '/free', '/privacy', '/terms']);
+const TRACKED_PAGES = new Set(['/', '/plan', '/guide', '/contact', '/quiz', '/practice-test', '/register', '/login', '/dashboard', '/free', '/privacy', '/terms']);
 const dayKey = (d = new Date()) => d.toLocaleDateString('en-CA', { timeZone: STATS_TZ }); // YYYY-MM-DD
 // Weeks start on Monday; the key is that Monday's date.
 const weekKey = (day) => { const d = new Date(day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
@@ -143,10 +144,12 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHea
 // ---------- public ----------
 app.get('/', wrap(async (req, res) => res.render('home', { title: 'GMAT Quant Coaching', faq: SEO.FAQ, samples: SAMPLES, proof: PROOF.view(await PROOF.getProof()) })));
 
-app.get('/register', (req, res) => {
+app.get('/register', wrap(async (req, res) => {
   if (req.user) return res.redirect('/dashboard');
-  res.render('register', { title: 'Create account', form: {}, error: null, next: pickNext(req.query.next) });
-});
+  let form = {};
+  if (/^[0-9a-f-]{36}$/.test(String(req.query.lead || ''))) { const l = await db.get('leads', req.query.lead); if (l) form = { name: l.name, email: l.email }; }
+  res.render('register', { title: 'Create account', form, error: null, next: pickNext(req.query.next) });
+}));
 app.post('/register', authLimiter, wrap(async (req, res) => {
   const form = { name: clean(req.body.name, 100), email: clean(req.body.email, 200).toLowerCase(), phone: clean(req.body.phone, 40), testDate: clean(req.body.testDate, 20), targetScore: clean(req.body.targetScore, 10) };
   const next = pickNext(req.body.next);
@@ -167,7 +170,15 @@ app.post('/register', authLimiter, wrap(async (req, res) => {
     createdAt: db.now(),
   });
   login(req, user);
-  flash(req, 'success', `Welcome, ${user.name.split(' ')[0]}! Your account is ready.`);
+  const base = SEO.baseUrl(req), first = user.name.split(' ')[0];
+  await Promise.all([
+    MAIL.notify(`New account: ${user.name}`, [['Name', user.name], ['Email', user.email], ['Phone', user.phone], ['Test date', user.testDate], ['Target score', user.targetScore], ['Next step', next === 'free' ? 'Booking a free call' : next], ['Source', user.source]], { replyTo: user.email, link: `${base}/admin` }),
+    MAIL.toStudent(user.email, 'Welcome to MZB Academy', `Welcome, ${first}!`, [
+      'Your free MZB Academy account is ready. From your student dashboard you can book your free 1-on-1 Zoom call, take the full-length practice test, and ask your tutor questions.',
+      'On your free call we review your GMAT score plan, work a few timed questions together, and if it is the right fit you can set up your bootcamp sessions.'],
+      { url: `${base}/dashboard#free-session`, label: 'Book my free call' }),
+  ]);
+  flash(req, 'success', `Welcome, ${first}! Your account is ready.`);
   res.redirect(NEXT[next] || '/dashboard');
 }));
 
@@ -272,28 +283,64 @@ app.get('/practice-test/:id/results', requireAuth, wrap(ownAttempt), wrap(async 
 
 // ---------- "Find your plan" quiz (lead capture) ----------
 const planLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: true, legacyHeaders: false });
-app.get('/plan', (req, res) => res.render('plan', { title: 'Find your GMAT Quant plan', questions: QUALIFY.QUESTIONS, error: null, form: {} }));
+app.get('/plan', (req, res) => res.render('plan', { title: 'Get your GMAT score plan', questions: QUALIFY.QUESTIONS, error: null, form: {} }));
 app.post('/plan', planLimiter, wrap(async (req, res) => {
   const answers = {};
   for (const q of QUALIFY.QUESTIONS) { const v = String(req.body[q.id] || ''); if (q.options.some(o => o[0] === v)) answers[q.id] = v; }
   const form = { ...answers, name: clean(req.body.name, 100), email: clean(req.body.email, 200).toLowerCase(), consent: req.body.consent === 'yes' };
   let error = null;
-  if (Object.keys(answers).length < QUALIFY.QUESTIONS.length) error = 'Please answer all five questions.';
+  if (Object.keys(answers).length < QUALIFY.QUESTIONS.length) error = 'Please answer every question.';
   else if (!form.name) error = 'Please enter your first name.';
   else if (!isEmail(form.email)) error = 'Please enter a valid email so we can send your plan.';
-  if (error) return res.status(400).render('plan', { title: 'Find your GMAT Quant plan', questions: QUALIFY.QUESTIONS, error, form });
-  const lead = await db.insert('leads', { id: db.id(), userId: req.user ? req.user.id : null, name: form.name, email: form.email,
+  if (error) return res.status(400).render('plan', { title: 'Get your GMAT score plan', questions: QUALIFY.QUESTIONS, error, form });
+  const lead = await db.insert('leads', { id: db.id(), type: 'plan', userId: req.user ? req.user.id : null, name: form.name, email: form.email,
     consent: form.consent, answers, source: clean(req.session.src, 20), status: 'new', createdAt: db.now() });
+  const base = SEO.baseUrl(req), pl = QUALIFY.plan(answers, null), L = QUALIFY.label;
+  await Promise.all([
+    MAIL.notify(`Score plan: ${lead.name} (goal ${pl.goalLabel})`, [['Name', lead.name], ['Email', lead.email], ['Goal', L('target', answers.target)], ['Programs', L('programs', answers.programs)],
+      ['Quant now', L('level', answers.level)], ['Test date', L('date', answers.date)], ['Hours/week', L('hours', answers.hours)], ['Challenge', L('struggle', answers.struggle)],
+      ['Quant target', `Q${pl.lo}–${pl.hi}`], ['Tips consent', lead.consent ? 'Yes' : 'No']], { replyTo: lead.email, link: `${base}/plan/${lead.id}` }),
+    MAIL.toStudent(lead.email, 'Your GMAT score plan', `Your GMAT score plan, ${lead.name}`, [
+      `To reach ${pl.goalLabel}, aim for Q${pl.lo}–${pl.hi} in Quant (roughly the ${pl.pLo}th–${pl.pHi}th percentile).`, pl.gapText, pl.timing,
+      'Next step: create your free account and book a free 1-on-1 call to talk the plan through. Your free GMAT Quant Playbook is linked on your plan page.'],
+      { url: `${base}/plan/${lead.id}`, label: 'View my score plan' }),
+  ]);
   res.redirect(`/plan/${lead.id}`);
 }));
 app.get('/plan/:id', wrap(async (req, res, next) => {
   if (!/^[0-9a-f-]{36}$/.test(req.params.id)) return next();
   const lead = await db.get('leads', req.params.id);
   if (!lead) return next();
-  res.render('plan-result', { title: 'Your GMAT Quant plan', lead, plan: QUALIFY.plan(lead.answers), label: QUALIFY.label, questions: QUALIFY.QUESTIONS });
+  const cohort = PROOF.view(await PROOF.getProof()).cohort;
+  res.render('plan-result', { title: 'Your GMAT score plan', lead, cohort, plan: QUALIFY.plan(lead.answers, cohort), label: QUALIFY.label, questions: QUALIFY.QUESTIONS });
 }));
 app.get('/privacy', (req, res) => res.render('privacy', { title: 'Privacy policy' }));
 app.get('/terms', (req, res) => res.render('terms', { title: 'Terms of use' }));
+
+// ---------- free GMAT Quant Playbook (self-study guide, email capture) ----------
+const GUIDE_PDF = '/downloads/mzb-gmat-quant-playbook.pdf';
+app.get('/guide', (req, res) => res.render('guide', { title: 'Free GMAT Quant Playbook', error: null, form: {} }));
+app.post('/guide', planLimiter, wrap(async (req, res) => {
+  const form = { name: clean(req.body.name, 100), email: clean(req.body.email, 200).toLowerCase(), consent: req.body.consent === 'yes' };
+  if (!form.name || !isEmail(form.email)) return res.status(400).render('guide', { title: 'Free GMAT Quant Playbook', error: 'Please enter your first name and a valid email.', form });
+  const lead = await db.insert('leads', { id: db.id(), type: 'guide', userId: req.user ? req.user.id : null, name: form.name, email: form.email,
+    consent: form.consent, answers: {}, source: clean(req.session.src, 20), status: 'new', createdAt: db.now() });
+  const base = SEO.baseUrl(req);
+  await Promise.all([
+    MAIL.notify(`Playbook download: ${lead.name}`, [['Name', lead.name], ['Email', lead.email], ['Tips consent', lead.consent ? 'Yes' : 'No'], ['Source', lead.source]], { replyTo: lead.email, link: `${base}/admin#leads` }),
+    MAIL.toStudent(lead.email, 'Your free GMAT Quant Playbook', `Here's your Playbook, ${lead.name}`, [
+      'Thanks for downloading The GMAT Quant Playbook. Read it in one sitting (about 20 minutes), then try the 8-question practice set with a 17-minute timer.',
+      `When you're ready, get your free GMAT score plan (2 minutes) at ${base}/plan and book a free 1-on-1 call with your tutor.`],
+      { url: `${base}${GUIDE_PDF}`, label: 'Download the Playbook (PDF)' }),
+  ]);
+  res.redirect(`/guide/thanks/${lead.id}`);
+}));
+app.get('/guide/thanks/:id', wrap(async (req, res, next) => {
+  if (!/^[0-9a-f-]{36}$/.test(req.params.id)) return next();
+  const lead = await db.get('leads', req.params.id);
+  if (!lead) return next();
+  res.render('guide-thanks', { title: 'Your GMAT Quant Playbook', lead, pdf: GUIDE_PDF });
+}));
 
 // ---------- free Quant score check ----------
 // A rough, practice-only estimate on the 60–90 Quant scale. Not an official GMAT score.
@@ -343,8 +390,10 @@ app.get('/dashboard', requireAuth, wrap(async (req, res) => {
   const posts = (await db.all('posts')).filter(p => p.audience === 'all' || (p.audience === 'bootcamp' && active));
   const questions = await db.where('questions', 'userId', req.user.id);
   const [lastQuiz] = await db.where('quiz_attempts', 'userId', req.user.id);
+  const myPlanLead = (await db.where('leads', 'email', req.user.email)).find(l => l.type !== 'guide' && l.answers && l.answers.target);
+  const myPlan = myPlanLead ? { id: myPlanLead.id, ...QUALIFY.plan(myPlanLead.answers, null) } : null;
   const tests = (await db.where('test_attempts', 'userId', req.user.id)).filter(t => t.status === 'completed');
-  res.render('dashboard', { title: 'My dashboard', enrollment, freeSession, posts, questions, lastQuiz, tests });
+  res.render('dashboard', { title: 'My dashboard', enrollment, freeSession, posts, questions, lastQuiz, tests, myPlan });
 }));
 
 app.post('/free-session', requireAuth, wrap(async (req, res) => {
@@ -356,6 +405,8 @@ app.post('/free-session', requireAuth, wrap(async (req, res) => {
     timezone: clean(req.body.timezone, 60), notes: clean(req.body.notes, 1000),
     zoomLink: '', scheduledFor: '', createdAt: db.now(),
   });
+  await MAIL.notify(`Free call request: ${req.user.name}`, [['Name', req.user.name], ['Email', req.user.email], ['Phone', req.user.phone], ['Preferred time 1', clean(req.body.preferred1, 40)],
+    ['Preferred time 2', clean(req.body.preferred2, 40)], ['Time zone', clean(req.body.timezone, 60)], ['Notes', clean(req.body.notes, 1000)]], { replyTo: req.user.email, link: `${SEO.baseUrl(req)}/admin#sessions` });
   flash(req, 'success', 'Request received! You\'ll see your Zoom link here once your session is confirmed.');
   res.redirect('/dashboard#free-session');
 }));
@@ -364,6 +415,7 @@ app.post('/enroll', requireAuth, wrap(async (req, res) => {
   let [e] = await db.where('enrollments', 'userId', req.user.id);
   if (!e) e = await db.insert('enrollments', { id: db.id(), userId: req.user.id, cohort: clean(req.body.cohort, 60), status: 'pending_payment', createdAt: db.now() });
   else if (e.status === 'cancelled') e = await db.update('enrollments', e.id, { status: 'pending_payment', cohort: clean(req.body.cohort, 60) || e.cohort });
+  await MAIL.notify(`Bootcamp registration: ${req.user.name}`, [['Name', req.user.name], ['Email', req.user.email], ['Phone', req.user.phone], ['Cohort', e.cohort], ['Status', e.status]], { replyTo: req.user.email, link: `${SEO.baseUrl(req)}/admin#enrollments` });
   if (SITE.paymentLink && e.status === 'pending_payment') {
     const url = new URL(SITE.paymentLink);
     url.searchParams.set('prefilled_email', req.user.email);
@@ -378,9 +430,26 @@ app.post('/questions', requireAuth, wrap(async (req, res) => {
   const body = clean(req.body.body, 3000);
   if (body) {
     await db.insert('questions', { id: db.id(), userId: req.user.id, topic: clean(req.body.topic, 60), body, reply: '', createdAt: db.now() });
+    await MAIL.notify(`Student question: ${req.user.name}`, [['Name', req.user.name], ['Email', req.user.email], ['Topic', clean(req.body.topic, 60)], ['Question', body]], { replyTo: req.user.email, link: `${SEO.baseUrl(req)}/admin#questions` });
     flash(req, 'success', 'Question sent to your tutor.');
   }
   res.redirect('/dashboard#ask');
+}));
+
+// ---------- contact us (emails support@mzbacademy.com) ----------
+const CONTACT_TOPICS = ['General question', 'Free call', 'Bootcamp & payment', 'My account', 'Other'];
+app.get('/contact', (req, res) => res.render('contact', { title: 'Contact us', topics: CONTACT_TOPICS, form: req.user ? { name: req.user.name, email: req.user.email } : {}, error: null, sent: req.query.sent === '1' }));
+app.post('/contact', planLimiter, wrap(async (req, res) => {
+  const form = { name: clean(req.body.name, 100), email: clean(req.body.email, 200).toLowerCase(), topic: CONTACT_TOPICS.includes(req.body.topic) ? req.body.topic : 'Other', message: clean(req.body.message, 4000) };
+  let error = null;
+  if (String(req.body.website || '')) return res.redirect('/contact?sent=1'); // honeypot
+  if (!form.name) error = 'Please enter your name.';
+  else if (!isEmail(form.email)) error = 'Please enter a valid email so we can reply.';
+  else if (form.message.length < 5) error = 'Please write your message.';
+  if (error) return res.status(400).render('contact', { title: 'Contact us', topics: CONTACT_TOPICS, form, error, sent: false });
+  await db.insert('messages', { id: db.id(), ...form, createdAt: db.now() });
+  await MAIL.contact(form);
+  res.redirect('/contact?sent=1');
 }));
 
 // ---------- tutor/admin ----------
@@ -423,7 +492,17 @@ app.get('/admin', requireAuth, requireAdmin, wrap(async (req, res) => {
 app.post('/admin/session/:id', requireAuth, requireAdmin, wrap(async (req, res) => {
   const patch = { scheduledFor: clean(req.body.scheduledFor, 60), zoomLink: safeUrl(req.body.zoomLink) };
   if (['requested', 'scheduled', 'completed', 'cancelled'].includes(req.body.status)) patch.status = req.body.status;
-  await db.update('bookings', req.params.id, patch);
+  const b0 = await db.get('bookings', req.params.id), before = b0 && { ...b0 };
+  const bk = await db.update('bookings', req.params.id, patch);
+  const changed = before && (before.status !== bk.status || before.scheduledFor !== bk.scheduledFor || before.zoomLink !== bk.zoomLink);
+  if (bk && bk.status === 'scheduled' && changed) {
+    const st = await db.get('users', bk.userId);
+    if (st) await MAIL.toStudent(st.email, 'Your free GMAT call is confirmed', `You're booked, ${st.name.split(' ')[0]}!`, [
+      `Your free 1-on-1 GMAT Quant call is confirmed${bk.scheduledFor ? ' for ' + bk.scheduledFor : ''}.`,
+      bk.zoomLink ? `Zoom link: ${bk.zoomLink}` : 'Your Zoom link will appear in your dashboard.',
+      'Bring your score plan and any questions. If you have read the Playbook, bring your practice-set results too.'],
+      { url: `${SEO.baseUrl(req)}/dashboard#free-session`, label: 'Open my dashboard' });
+  }
   flash(req, 'success', 'Free session updated.');
   res.redirect('/admin#sessions');
 }));
@@ -431,6 +510,21 @@ app.post('/admin/enrollment/:id', requireAuth, requireAdmin, wrap(async (req, re
   if (['pending_payment', 'active', 'cancelled'].includes(req.body.status)) await db.update('enrollments', req.params.id, { status: req.body.status });
   flash(req, 'success', 'Enrollment updated.');
   res.redirect('/admin#enrollments');
+}));
+app.post('/admin/tutor', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const f = (k, n) => clean(req.body[k], n);
+  await PROOF.saveProof({ tutorName: f('tutorName', 80), tutorTitle: f('tutorTitle', 120), tutorPhoto: safeUrl(req.body.tutorPhoto),
+    tutorScore: f('tutorScore', 60), tutorBio: f('tutorBio', 400), tutorStory: f('tutorStory', 3000), tutorCreds: f('tutorCreds', 800),
+    tutorVideoUrl: PROOF.youtubeId(req.body.tutorVideoUrl) ? f('tutorVideoUrl', 200) : '' });
+  flash(req, 'success', 'Tutor profile saved. It now leads the home page.');
+  res.redirect('/admin#tutor');
+}));
+app.post('/admin/cohort', requireAuth, requireAdmin, wrap(async (req, res) => {
+  const start = clean(req.body.cohortStart, 10);
+  await PROOF.saveProof({ cohortStart: /^\d{4}-\d{2}-\d{2}$/.test(start) ? start : '', cohortSeats: String(parseInt(req.body.cohortSeats, 10) || ''),
+    cohortTaken: String(parseInt(req.body.cohortTaken, 10) || 0), cohortSchedule: clean(req.body.cohortSchedule, 120) });
+  flash(req, 'success', start ? 'Cohort saved. The countdown and seats left now show on the site.' : 'Cohort cleared. The countdown is hidden.');
+  res.redirect('/admin#cohort');
 }));
 app.post('/admin/proof', requireAuth, requireAdmin, wrap(async (req, res) => {
   const f = (k, n = 60) => clean(req.body[k], n);
@@ -477,7 +571,10 @@ app.post('/admin/post/:id/delete', requireAuth, requireAdmin, wrap(async (req, r
   res.redirect('/admin#posts');
 }));
 app.post('/admin/question/:id/reply', requireAuth, requireAdmin, wrap(async (req, res) => {
-  await db.update('questions', req.params.id, { reply: clean(req.body.reply, 5000), repliedAt: db.now() });
+  const q = await db.update('questions', req.params.id, { reply: clean(req.body.reply, 5000), repliedAt: db.now() });
+  const st = q && q.reply && await db.get('users', q.userId);
+  if (st) await MAIL.toStudent(st.email, 'Your tutor replied to your question', 'Your tutor replied', [`Your question: ${q.body.slice(0, 500)}`, `Reply: ${q.reply}`],
+    { url: `${SEO.baseUrl(req)}/dashboard#ask`, label: 'See it in my dashboard' });
   flash(req, 'success', 'Reply saved.');
   res.redirect('/admin#questions');
 }));

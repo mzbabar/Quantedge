@@ -16,6 +16,20 @@
       </div>
     </div>
 
+    <% if (myPlan) { %>
+    <div class="dash-plan">
+      <div><p class="pr-k">Your GMAT score plan</p>
+        <h2>Aim for <span>Q<%= myPlan.lo %>–<%= myPlan.hi %></span> to reach <%= myPlan.goalLabel %></h2>
+        <p><%= myPlan.gapText %></p></div>
+      <div class="dash-plan-cta"><a class="btn v-btn-gold btn-sm" href="/plan/<%= myPlan.id %>">View my plan</a><a class="btn btn-sm v-btn-ghost" href="/downloads/mzb-gmat-quant-playbook.pdf" download>Free Playbook (PDF)</a></div>
+    </div>
+    <% } else { %>
+    <div class="dash-plan">
+      <div><p class="pr-k">Start here</p><h2>Get your GMAT score plan</h2><p>Two minutes: see the Quant score you need, your gap and your timeline. Bring it to your free call.</p></div>
+      <div class="dash-plan-cta"><a class="btn v-btn-gold btn-sm" href="/plan">Get my score plan</a><a class="btn btn-sm v-btn-ghost" href="/downloads/mzb-gmat-quant-playbook.pdf" download>Free Playbook (PDF)</a></div>
+    </div>
+    <% } %>
+
     <div class="grid-2">
       <!-- Free session -->
       <div class="card" id="free-session">

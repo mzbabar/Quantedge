@@ -50,7 +50,8 @@
     </div>
 
     <div class="kpis">
-      <div class="kpi"><span class="num"><%= leads.length %></span>plan-quiz leads</div>
+      <div class="kpi"><span class="num"><%= leads.filter(l => l.type !== 'guide').length %></span>score-plan leads</div>
+      <div class="kpi"><span class="num"><%= leads.filter(l => l.type === 'guide').length %></span>Playbook downloads</div>
       <div class="kpi"><span class="num"><%= testAttempts.length %></span>practice tests taken</div>
       <div class="kpi"><span class="num"><%= quizAttempts.length %></span>score checks taken</div>
       <div class="kpi"><span class="num"><%= students.length %></span>students</div>
@@ -127,15 +128,16 @@
     </div>
 
     <div class="card" id="leads">
-      <h2>"Find your plan" leads</h2>
-      <p class="small muted">People who took the 2-minute plan quiz. Emails are for following up about the free session; only email marketing tips to people marked ✓ for consent.</p>
+      <h2>Leads: score plans &amp; Playbook downloads</h2>
+      <p class="small muted">People who took the 2-minute score plan or downloaded the free Playbook. Follow up about the free call. Emails are for following up about the free session; only email marketing tips to people marked ✓ for consent.</p>
       <% if (!leads.length) { %><p class="muted">None yet.</p><% } else { %>
       <div class="table-wrap"><table>
-        <tr><th>Date</th><th>Name</th><th>Email</th><th>Test date</th><th>Target</th><th>Level</th><th>Struggle</th><th>Tips ok</th><th>Status</th></tr>
-        <% leads.forEach(l => { %>
+        <tr><th>Date</th><th>Source</th><th>Name</th><th>Email</th><th>Goal</th><th>Quant now</th><th>Test date</th><th>Challenge</th><th>Tips ok</th><th>Status</th></tr>
+        <% leads.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))).forEach(l => { const a = l.answers || {}; const isGuide = l.type === 'guide'; %>
         <tr>
-          <td><%= fmt(l.createdAt) %></td><td><a href="/plan/<%= l.id %>"><%= l.name %></a></td><td><%= l.email %></td>
-          <td><%= planLabel('date', l.answers.date) %></td><td><%= planLabel('target', l.answers.target) %></td><td><%= planLabel('level', l.answers.level) %></td><td><%= planLabel('struggle', l.answers.struggle) %></td>
+          <td><%= fmt(l.createdAt) %></td><td><span class="tag"><%= isGuide ? 'Playbook' : 'Score plan' %></span></td>
+          <td><% if (isGuide) { %><%= l.name %><% } else { %><a href="/plan/<%= l.id %>"><%= l.name %></a><% } %></td><td><%= l.email %></td>
+          <td><%= planLabel('target', a.target) || '—' %></td><td><%= planLabel('level', a.level) || '—' %></td><td><%= planLabel('date', a.date) || '—' %></td><td><%= planLabel('struggle', a.struggle) || '—' %></td>
           <td><%= l.consent ? '✓' : '—' %></td>
           <td><form method="post" action="/admin/lead/<%= l.id %>" class="inline lead-status"><input type="hidden" name="_csrf" value="<%= csrf %>">
             <select name="status"><% ['new', 'contacted', 'booked', 'enrolled', 'not a fit'].forEach(o => { %><option <%= (l.status || 'new') === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
@@ -144,6 +146,44 @@
         <% }) %>
       </table></div>
       <% } %>
+    </div>
+
+    <div class="card" id="tutor">
+      <h2>Tutor profile (front and center on the home page)</h2>
+      <p class="small muted">Shown in the home page hero and a "Meet your tutor" section as soon as a name is saved. Leave the name empty to hide it.</p>
+      <form method="post" action="/admin/tutor" class="form proof-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="row2">
+          <label>Name<input name="tutorName" maxlength="80" value="<%= proof.tutorName %>" placeholder="e.g. M. Z. Babar"></label>
+          <label>Title<input name="tutorTitle" maxlength="120" value="<%= proof.tutorTitle %>" placeholder="e.g. Founder &amp; lead GMAT Quant tutor"></label>
+        </div>
+        <div class="row2">
+          <label>Photo URL<input name="tutorPhoto" value="<%= proof.tutorPhoto %>" placeholder="https://… (square photo works best)"></label>
+          <label>Score / headline result<input name="tutorScore" maxlength="60" value="<%= proof.tutorScore %>" placeholder="e.g. GMAT Quant 90 (100th percentile)"></label>
+        </div>
+        <label>Short quote for the hero card (1–2 sentences)<textarea name="tutorBio" rows="2" maxlength="400" placeholder="Why you teach, in your own words"><%= proof.tutorBio %></textarea></label>
+        <label>Your story (blank line between paragraphs)<textarea name="tutorStory" rows="6" maxlength="3000"><%= proof.tutorStory %></textarea></label>
+        <label>Credentials (one per line, up to 6)<textarea name="tutorCreds" rows="4" maxlength="800" placeholder="10+ years teaching math&#10;MBA, …"><%= proof.tutorCreds %></textarea></label>
+        <label>Intro video (YouTube link, optional)<input name="tutorVideoUrl" value="<%= proof.tutorVideoUrl %>" placeholder="https://www.youtube.com/watch?v=…"></label>
+        <button class="btn">Save tutor profile</button>
+      </form>
+    </div>
+
+    <div class="card" id="cohort">
+      <h2>Next bootcamp cohort</h2>
+      <p class="small muted">Drives the start date, the seats-left bar and the countdown bar on the home page and score plans. Hidden automatically once the date passes, or if left empty.</p>
+      <form method="post" action="/admin/cohort" class="form proof-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <div class="row2">
+          <label>Start date<input type="date" name="cohortStart" value="<%= proof.cohortStart %>"></label>
+          <label>Schedule<input name="cohortSchedule" maxlength="120" value="<%= proof.cohortSchedule %>" placeholder="e.g. Tue &amp; Thu, 8–9:30 pm ET"></label>
+        </div>
+        <div class="row2">
+          <label>Total seats<input type="number" min="0" name="cohortSeats" value="<%= proof.cohortSeats %>" placeholder="e.g. 10"></label>
+          <label>Seats taken<input type="number" min="0" name="cohortTaken" value="<%= proof.cohortTaken %>" placeholder="e.g. 4"></label>
+        </div>
+        <button class="btn">Save cohort</button>
+      </form>
     </div>
 
     <div class="card" id="proof">

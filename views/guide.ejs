@@ -1,0 +1,46 @@
+<%- include('partials/header') %>
+<section class="g-hero">
+  <div class="wrap g-grid">
+    <div>
+      <p class="eyebrow v-eyebrow-gold">Free PDF · 16 pages · 20-minute read</p>
+      <h1 class="g-h1">The GMAT Quant <em class="serif">Playbook</em></h1>
+      <p class="g-lead">Start self-studying today. The pacing plan, the 8 concepts that show up most, worked examples, a timed practice set and a 2-week study plan, all written for the GMAT Focus Edition.</p>
+      <ul class="v-checks">
+        <li><%- include('partials/icon', { name: 'check' }) %>What Quant score you need for your goal, with percentiles</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>The 45-minute pacing plan with checkpoints</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>8 core concepts, each with a worked example and the trap to avoid</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>8 original practice questions with fastest-method solutions</li>
+        <li><%- include('partials/icon', { name: 'check' }) %>A day-by-day 2-week self-study plan</li>
+      </ul>
+    </div>
+    <div class="g-right">
+      <div class="book" aria-hidden="true">
+        <div class="book-cover">
+          <span class="book-brand"><%- include('partials/mark', { m: '#ffffff' }) %><b>MZB</b> ACADEMY</span>
+          <span class="book-k">Free guide · 2026</span>
+          <span class="book-t">The GMAT Quant<br><em>Playbook</em></span>
+          <span class="book-s">Pacing · 8 core concepts · Practice set · 2-week plan</span>
+        </div>
+      </div>
+      <form method="post" action="/guide" class="g-form">
+        <input type="hidden" name="_csrf" value="<%= csrf %>">
+        <h2>Send me the Playbook</h2>
+        <% if (error) { %><div class="flash flash-error"><%= error %></div><% } %>
+        <label class="plan-field">First name<input name="name" maxlength="100" autocomplete="given-name" value="<%= form.name || (user ? user.name.split(' ')[0] : '') %>" required></label>
+        <label class="plan-field">Email<input type="email" name="email" autocomplete="email" value="<%= form.email || (user ? user.email : '') %>" required></label>
+        <label class="consent"><input type="checkbox" name="consent" value="yes" <%= form.consent ? 'checked' : '' %>> Also send me occasional GMAT Quant tips. Unsubscribe any time.</label>
+        <button class="btn v-btn-gold btn-block">Get the free Playbook</button>
+        <p class="small muted center">Instant download. No payment details. <a href="/privacy">Privacy</a></p>
+      </form>
+    </div>
+  </div>
+</section>
+<section class="v-section">
+  <div class="wrap narrow center">
+    <p class="eyebrow">Self-study first, then decide</p>
+    <h2 class="v-h2">Read it, try the practice set, then bring your questions to a <em class="serif">free call.</em></h2>
+    <p class="v-sub">If you want to go faster, the 4-week live bootcamp turns the Playbook into a full plan, with a tutor and a small group aiming as high as you are.</p>
+    <div class="v-cta-row v-center"><a class="btn v-btn-navy" href="/plan">Get my GMAT score plan</a></div>
+  </div>
+</section>
+<%- include('partials/footer') %>

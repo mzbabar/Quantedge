@@ -33,6 +33,21 @@
     if ('IntersectionObserver' in window) new IntersectionObserver(function (e, o) { if (e[0].isIntersecting) { run(); o.disconnect(); } }).observe(el); else run();
   });
 
+  // Sticky cohort bar: slides in after the hero; live countdown to the cohort start.
+  var bar = document.getElementById('cohort-bar');
+  if (bar) {
+    var startAt = Date.parse(bar.dataset.start), countEl = document.getElementById('cohort-count');
+    var showBar = function () { bar.classList.toggle('on', window.scrollY > 520); };
+    window.addEventListener('scroll', showBar, { passive: true }); showBar();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    var tick = function () {
+      var ms = Math.max(0, startAt - Date.now()), s = Math.floor(ms / 1000);
+      var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+      countEl.innerHTML = 'Starts in <b>' + d + 'd ' + pad(h) + 'h ' + pad(m) + 'm ' + pad(sec) + 's</b>';
+    };
+    if (countEl && !isNaN(startAt)) { tick(); setInterval(tick, 1000); }
+  }
+
   // 60-second challenge.
   var box = document.getElementById('challenge');
   if (!box) return;

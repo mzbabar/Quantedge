@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+<section class="g-hero">
+  <div class="wrap narrow center">
+    <p class="eyebrow v-eyebrow-gold">It's yours, <%= lead.name %></p>
+    <h1 class="g-h1">Your Playbook is <em class="serif">ready.</em></h1>
+    <p class="g-lead">Read it in one sitting, then try the 8-question practice set with a 17-minute timer.</p>
+    <div class="v-cta-row v-center"><a class="btn v-btn-gold" href="<%= pdf %>" download>Download the Playbook (PDF)</a></div>
+  </div>
+</section>
+<section class="v-section">
+  <div class="wrap narrow">
+    <h2 class="v-h2 center">Your next <em class="serif">two steps</em></h2>
+    <ol class="pr-steps">
+      <li><b>Get your GMAT score plan (2 minutes)</b><span>See the Quant score you need for your goal, your gap and your timeline.</span></li>
+      <li><b>Book a free 1-on-1 call</b><span>30 minutes with your tutor to review your plan and work timed questions together. If it's a fit, set up your bootcamp sessions on the call.</span></li>
+    </ol>
+    <div class="v-cta-row v-center">
+      <a class="btn v-btn-navy" href="/plan">Get my score plan</a>
+      <a class="btn v-btn-outline-navy" href="<%= user ? '/dashboard#free-session' : '/register?next=free&lead=' + lead.id %>">Book my free call</a>
+    </div>
+  </div>
+</section>
+<%- include('partials/footer') %>

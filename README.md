@@ -66,3 +66,20 @@ Without `DATABASE_URL`, data is saved to `data/db.json`. Paste your Neon `DATABA
 - `/robots.txt` allows search engines and named AI crawlers (GPTBot, OAI-SearchBot, ClaudeBot, Claude-SearchBot, PerplexityBot, Google-Extended, Applebot and more) on public pages. To stop AI *training* while staying in AI *search*, change `Allow: /` to `Disallow: /` for GPTBot, ClaudeBot, Google-Extended, Applebot-Extended, meta-externalagent and CCBot in `seo.js`.
 - `/sitemap.xml` lists the public pages; `/llms.txt` gives AI assistants a plain-language summary of the site.
 - After deploying: add the site to Google Search Console and Bing Webmaster Tools (Bing also powers ChatGPT search), verify ownership, and submit `https://YOUR-DOMAIN/sitemap.xml`.
+
+## Sales funnel (v3)
+- **Score plan** (`/plan`): 6 questions → target Quant range, percentile, gap, timeline → "Create my free account & book my call" (registration is pre-filled from the plan).
+- **Free Playbook** (`/guide`): name + email → download `public/downloads/mzb-gmat-quant-playbook.pdf` (16 pages, original questions).
+- **Tutor profile** (`/admin#tutor`): once a name is saved, the tutor card appears in the home page hero and a "Meet your tutor" section appears. Empty = hidden.
+- **Cohort** (`/admin#cohort`): start date, seats, seats taken, schedule → cohort chip, seats-left bar and sticky countdown bar. Hides itself after the start date.
+- Leads table in `/admin#leads` shows both score-plan and Playbook leads.
+
+## Email (Resend)
+Set these in Vercel → Settings → Environment Variables, then redeploy:
+- `RESEND_API_KEY` (required to send; without it emails are skipped and logged)
+- `EMAIL_FROM` = `MZB Academy <training@mzbacademy.com>` (default; mzbacademy.com must be verified in Resend → Domains)
+- `NOTIFY_EMAIL` = `training@mzbacademy.com` (default) — every site notification
+- `CONTACT_EMAIL` = `support@mzbacademy.com` (default) — shown as the contact address; receives the /contact form
+
+Notifications to training@: new account, score plan, Playbook download, free-call request, bootcamp registration, student question (reply-to = the student).
+Emails to students (reply-to = support@): welcome, score plan, Playbook link, free call confirmed (when you set status "scheduled" in /admin), tutor reply.

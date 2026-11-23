@@ -40,7 +40,7 @@
         <a href="#faq">FAQ</a>
       <% } %>
       <a href="/practice-test">Practice test</a>
-      <a href="/quiz">Free score check</a>
+      <a href="/guide">Free Playbook</a>
       <% if (user) { %>
         <% if (user.role === 'admin') { %><a href="/admin">Admin</a><% } %>
         <a href="/dashboard">Dashboard</a>
@@ -50,7 +50,7 @@
         </form>
       <% } else { %>
         <a href="/login">Log in</a>
-        <a class="btn btn-sm" href="/plan">Find your plan</a>
+        <a class="btn btn-sm" href="/plan">Get my score plan</a>
       <% } %>
     </nav>
   </div>
