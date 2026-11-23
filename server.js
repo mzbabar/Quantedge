@@ -551,6 +551,14 @@ app.post('/admin/testimonial/:id/delete', requireAuth, requireAdmin, wrap(async 
   res.redirect('/admin#proof');
 }));
 // Delete one lead / registration, or clear them all (clear-all needs the confirm checkbox).
+app.post('/admin/session/:id/delete', requireAuth, requireAdmin, wrap(async (req, res) => {
+  await db.remove('bookings', req.params.id); flash(req, 'success', 'Free session request deleted.'); res.redirect('/admin#sessions');
+}));
+app.post('/admin/sessions/clear', requireAuth, requireAdmin, wrap(async (req, res) => {
+  if (req.body.confirm !== 'yes') { flash(req, 'error', 'Tick the confirmation box to delete all free session requests.'); return res.redirect('/admin#sessions'); }
+  const all = await db.all('bookings'); for (const b of all) await db.remove('bookings', b.id);
+  flash(req, 'success', `Deleted ${all.length} free session requests.`); res.redirect('/admin#sessions');
+}));
 app.post('/admin/lead/:id/delete', requireAuth, requireAdmin, wrap(async (req, res) => {
   await db.remove('leads', req.params.id); flash(req, 'success', 'Lead deleted.'); res.redirect('/admin#leads');
 }));

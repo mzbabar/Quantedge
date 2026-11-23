@@ -65,6 +65,7 @@
       <h2>Free session requests</h2>
       <% if (!sessions.length) { %><p class="muted">None yet.</p><% } %>
       <% sessions.forEach(s => { %>
+        <div class="row-with-del">
         <form method="post" action="/admin/session/<%= s.id %>" class="admin-row">
           <input type="hidden" name="_csrf" value="<%= csrf %>">
           <div class="who"><strong><%= s.student.name %></strong><br><span class="small muted"><%= s.student.email %> · asked <%= fmt(s.createdAt) %></span>
@@ -76,7 +77,15 @@
           <select name="status"><% ['requested','scheduled','completed','cancelled'].forEach(o => { %><option <%= s.status === o ? 'selected' : '' %>><%= o %></option><% }) %></select>
           <button class="btn btn-sm">Save</button>
         </form>
+        <details class="del"><summary>Delete</summary><form method="post" action="/admin/session/<%= s.id %>/delete" class="inline"><input type="hidden" name="_csrf" value="<%= csrf %>"><button class="btn btn-sm btn-danger">Yes, delete</button></form></details>
+        </div>
       <% }) %>
+      <% if (sessions.length) { %>
+      <details class="del del-all"><summary>Clear all free session requests…</summary>
+        <form method="post" action="/admin/sessions/clear" class="clear-form"><input type="hidden" name="_csrf" value="<%= csrf %>">
+          <label class="consent"><input type="checkbox" name="confirm" value="yes" required> I understand this permanently deletes all <%= sessions.length %> free session requests. This can't be undone.</label>
+          <button class="btn btn-sm btn-danger">Delete all</button></form></details>
+      <% } %>
     </div>
 
     <div class="card" id="enrollments">
