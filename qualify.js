@@ -9,7 +9,7 @@ const QUESTIONS = [
   { id: 'target', q: 'What total GMAT score are you aiming for?', options: [
     ['605', '605–645'], ['655', '655–695'], ['705', '705–745'], ['755', '755 or higher'], ['unsure', "Not sure yet"] ] },
   { id: 'programs', q: 'Which programs are you applying to?', options: [
-    ['top15', 'Top-15 MBA programs'], ['top50', 'Top-50 MBA programs'], ['other', 'Specialized master’s or other programs'], ['unsure', 'Still deciding'] ] },
+    ['top15', 'Top-15 MBA programs (e.g. M7, INSEAD, LBS)'], ['top50', 'MBA programs ranked about 16–50'], ['other', 'Other MBA, specialized master’s or other programs'], ['unsure', 'Still deciding'] ] },
   { id: 'level', q: 'What was your latest Quant section score?', options: [
     ['none', "I haven't taken a practice test yet"], ['lt70', 'Below 70'], ['70', '70–75'], ['76', '76–80'], ['81', '81–85'], ['86', '86 or higher'] ] },
   { id: 'date', q: 'When are you taking the GMAT?', options: [
