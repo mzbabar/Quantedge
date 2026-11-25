@@ -21,5 +21,6 @@
     <div class="small foot-legal"><a href="/privacy">Privacy policy</a> · <a href="/terms">Terms of use</a><br>© <%= new Date().getFullYear() %> <%= site.name %>. GMAT™ is a trademark of GMAC. This site is not affiliated with or endorsed by GMAC.</div>
   </div>
 </footer>
+<% if (!path.startsWith('/admin')) { %><script src="/track.js" defer></script><% } %>
 </body>
 </html>

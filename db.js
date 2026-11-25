@@ -27,6 +27,7 @@ if (process.env.DATABASE_URL) {
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE INDEX IF NOT EXISTS docs_collection_idx ON docs (collection);
+    CREATE INDEX IF NOT EXISTS docs_coll_created_idx ON docs (collection, created_at DESC);
     CREATE UNIQUE INDEX IF NOT EXISTS docs_user_email_idx ON docs ((data->>'email')) WHERE collection = 'users';
   `).catch(e => { ready = null; throw e; }));
   const q = async (sql, params) => { await init(); return pool.query(sql, params); };
@@ -38,6 +39,9 @@ if (process.env.DATABASE_URL) {
     insert: async (c, doc) => { await q('INSERT INTO docs (collection, id, data, created_at) VALUES ($1,$2,$3,$4)', [c, doc.id, doc, doc.createdAt]); return doc; },
     update: async (c, docId, patch) => (await q('UPDATE docs SET data = data || $3::jsonb WHERE collection=$1 AND id=$2 RETURNING data', [c, docId, JSON.stringify(patch)])).rows[0]?.data || null,
     remove: async (c, docId) => { await q('DELETE FROM docs WHERE collection=$1 AND id=$2', [c, docId]); },
+    // Newest documents created since an ISO time (used by the live activity feed), and deleting old ones.
+    recent: async (c, sinceIso, limit = 200) => (await q('SELECT data FROM docs WHERE collection=$1 AND created_at >= $2 ORDER BY created_at DESC LIMIT $3', [c, sinceIso, limit])).rows.map(r => r.data),
+    prune: async (c, beforeIso) => { await q('DELETE FROM docs WHERE collection=$1 AND created_at < $2', [c, beforeIso]); },
     // Atomically add numbers to fields of one document, creating it if needed (used by the visit counter).
     incr: async (c, docId, counts, meta = {}) => {
       await q(`INSERT INTO docs (collection, id, data) VALUES ($1, $2, $3::jsonb)
@@ -68,6 +72,8 @@ if (process.env.DATABASE_URL) {
     insert: async (c, doc) => { col(c).push(doc); save(); return doc; },
     update: async (c, docId, patch) => { const d = col(c).find(x => x.id === docId); if (!d) return null; Object.assign(d, patch); save(); return d; },
     remove: async (c, docId) => { data[c] = col(c).filter(d => d.id !== docId); save(); },
+    recent: async (c, sinceIso, limit = 200) => col(c).filter(d => d.createdAt >= sinceIso).sort(byNew).slice(0, limit),
+    prune: async (c, beforeIso) => { data[c] = col(c).filter(d => d.createdAt >= beforeIso); save(); },
     incr: async (c, docId, counts, meta = {}) => {
       let d = col(c).find(x => x.id === docId);
       if (!d) { d = { id: docId, createdAt: now(), ...meta }; col(c).push(d); }

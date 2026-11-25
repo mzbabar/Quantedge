@@ -845,3 +845,26 @@ div.t-big.t-initial { display: grid; }
 details.del { border: 0; background: none; padding: 0; margin: 0; border-radius: 0; box-shadow: none; }
 details.del-all { border-top: 1px dashed var(--line); padding-top: 14px; margin-top: 16px; }
 details.del-all summary { color: #B42318; }
+/* Admin live activity */
+.lv-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.lv-kpi { display: flex; flex-direction: column; gap: 4px; margin: 0; }
+.lv-big { font-family: var(--display); font-size: 2.6rem; font-weight: 800; line-height: 1; color: var(--ink-deep); }
+.lv-kpi > span:last-child { color: var(--muted); }
+.lv-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.lv-h3 { margin: 26px 0 8px; font-size: .9rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-deep); }
+.lv-table { width: 100%; border-collapse: collapse; font-size: .94rem; }
+.lv-table th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.lv-table td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.lv-scroll { max-height: 520px; overflow-y: auto; }
+.lv-time { white-space: nowrap; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.lv-where { white-space: nowrap; }
+.lv-flag { font-size: 1.05em; }
+.lv-muted { color: #6B7A90; }
+.lv-num { font-weight: 700; }
+.lv-empty { color: var(--muted); text-align: center; padding: 18px; }
+.lv-chip { display: inline-block; background: #EEF0F4; border-radius: 999px; padding: 1px 10px; font-size: .86rem; }
+.lv-chip-gold { background: #F4E6C3; color: #6B4F14; font-weight: 700; }
+.lv-key td { background: #FFFBF0; }
+.lv-pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #16A34A; margin-right: 6px; box-shadow: 0 0 0 0 rgba(22,163,74,.5); animation: lvp 2s infinite; }
+@keyframes lvp { 70% { box-shadow: 0 0 0 7px rgba(22,163,74,0); } 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); } }
+@media (max-width: 640px) { .lv-top { grid-template-columns: 1fr 1fr; gap: 10px; } .lv-big { font-size: 2rem; } .lv-table td, .lv-table th { padding: 8px 6px; } }

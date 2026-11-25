@@ -12,6 +12,7 @@ const QUIZ = require('./quiz-data');
 const TEST = require('./test-data');
 const SEO = require('./seo');
 const MAIL = require('./mailer');
+const LIVE = require('./live');
 const SAMPLES = require('./samples-data');
 const PROOF = require('./proof');
 const QUALIFY = require('./qualify');
@@ -66,7 +67,7 @@ const NEXT = { free: '/dashboard#free-session', test: '/practice-test' };
 const pickNext = (v) => (Object.prototype.hasOwnProperty.call(NEXT, v) ? v : '');
 const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 const flash = (req, type, msg) => { req.session.flash = { type, msg }; };
-const login = (req, user) => { req.session = { uid: user.id, csrf: crypto.randomBytes(24).toString('hex') }; };
+const login = (req, user) => { req.session = { uid: user.id, csrf: crypto.randomBytes(24).toString('hex'), vid: req.session && req.session.vid }; }; // keeps the anonymous visit id so live activity follows one visitor
 
 app.use(wrap(async (req, res, next) => {
   if (!req.session.csrf) req.session.csrf = crypto.randomBytes(24).toString('hex');
@@ -130,6 +131,10 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// Live activity beacon from /track.js (page views, scroll depth, clicks). CSRF token is sent with it.
+const trackLimiter = rateLimit({ windowMs: 60 * 1000, limit: 120, standardHeaders: false, legacyHeaders: false });
+app.post('/t', trackLimiter, wrap(LIVE.beacon));
+
 const requireAuth = (req, res, next) => {
   if (!req.user) { flash(req, 'info', 'Please log in to continue.'); return res.redirect('/login'); }
   next();
@@ -178,6 +183,7 @@ app.post('/register', authLimiter, wrap(async (req, res) => {
       'On your free call we review your GMAT score plan, work a few timed questions together, and if it is the right fit you can set up your bootcamp sessions.'],
       { url: `${base}/dashboard#free-session`, label: 'Book my free call' }),
   ]);
+  await LIVE.action(req, 'signup', '/register', next === 'free' ? 'Created account to book a free call' : 'Created account');
   flash(req, 'success', `Welcome, ${first}! Your account is ready.`);
   res.redirect(NEXT[next] || '/dashboard');
 }));
@@ -305,6 +311,7 @@ app.post('/plan', planLimiter, wrap(async (req, res) => {
       'Next step: create your free account and book a free 1-on-1 call to talk the plan through. Your free GMAT Quant Playbook is linked on your plan page.'],
       { url: `${base}/plan/${lead.id}`, label: 'View my score plan' }),
   ]);
+  await LIVE.action(req, 'plan', '/plan', `Score plan: goal ${pl.goalLabel}, target Q${pl.lo}–${pl.hi}`);
   res.redirect(`/plan/${lead.id}`);
 }));
 app.get('/plan/:id', wrap(async (req, res, next) => {
@@ -333,6 +340,7 @@ app.post('/guide', planLimiter, wrap(async (req, res) => {
       `When you're ready, get your free GMAT score plan (2 minutes) at ${base}/plan and book a free 1-on-1 call with your tutor.`],
       { url: `${base}${GUIDE_PDF}`, label: 'Download the Playbook (PDF)' }),
   ]);
+  await LIVE.action(req, 'playbook', '/guide', 'Downloaded the GMAT Quant Playbook');
   res.redirect(`/guide/thanks/${lead.id}`);
 }));
 app.get('/guide/thanks/:id', wrap(async (req, res, next) => {
@@ -407,6 +415,7 @@ app.post('/free-session', requireAuth, wrap(async (req, res) => {
   });
   await MAIL.notify(`Free call request: ${req.user.name}`, [['Name', req.user.name], ['Email', req.user.email], ['Phone', req.user.phone], ['Preferred time 1', clean(req.body.preferred1, 40)],
     ['Preferred time 2', clean(req.body.preferred2, 40)], ['Time zone', clean(req.body.timezone, 60)], ['Notes', clean(req.body.notes, 1000)]], { replyTo: req.user.email, link: `${SEO.baseUrl(req)}/admin#sessions` });
+  await LIVE.action(req, 'freecall', '/dashboard', 'Requested a free 1-on-1 call');
   flash(req, 'success', 'Request received! You\'ll see your Zoom link here once your session is confirmed.');
   res.redirect('/dashboard#free-session');
 }));
@@ -416,6 +425,7 @@ app.post('/enroll', requireAuth, wrap(async (req, res) => {
   if (!e) e = await db.insert('enrollments', { id: db.id(), userId: req.user.id, cohort: clean(req.body.cohort, 60), status: 'pending_payment', createdAt: db.now() });
   else if (e.status === 'cancelled') e = await db.update('enrollments', e.id, { status: 'pending_payment', cohort: clean(req.body.cohort, 60) || e.cohort });
   await MAIL.notify(`Bootcamp registration: ${req.user.name}`, [['Name', req.user.name], ['Email', req.user.email], ['Phone', req.user.phone], ['Cohort', e.cohort], ['Status', e.status]], { replyTo: req.user.email, link: `${SEO.baseUrl(req)}/admin#enrollments` });
+  await LIVE.action(req, 'bootcamp', '/dashboard', 'Registered for the bootcamp');
   if (SITE.paymentLink && e.status === 'pending_payment') {
     const url = new URL(SITE.paymentLink);
     url.searchParams.set('prefilled_email', req.user.email);
@@ -449,6 +459,7 @@ app.post('/contact', planLimiter, wrap(async (req, res) => {
   if (error) return res.status(400).render('contact', { title: 'Contact us', topics: CONTACT_TOPICS, form, error, sent: false });
   await db.insert('messages', { id: db.id(), ...form, createdAt: db.now() });
   await MAIL.contact(form);
+  await LIVE.action(req, 'contact', '/contact', `Contact form: ${form.topic}`);
   res.redirect('/contact?sent=1');
 }));
 
@@ -488,6 +499,9 @@ app.get('/admin', requireAuth, requireAdmin, wrap(async (req, res) => {
     quizAttempts: await db.all('quiz_attempts'),
     testAttempts: (await db.all('test_attempts')).filter(t => t.status === 'completed'),
   });
+}));
+app.get('/admin/live.json', requireAuth, requireAdmin, wrap(async (req, res) => {
+  res.set('Cache-Control', 'no-store').json(await LIVE.feed());
 }));
 app.post('/admin/session/:id', requireAuth, requireAdmin, wrap(async (req, res) => {
   const patch = { scheduledFor: clean(req.body.scheduledFor, 60), zoomLink: safeUrl(req.body.zoomLink) };

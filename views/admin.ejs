@@ -4,6 +4,26 @@
   <div class="wrap">
     <p class="eyebrow">Tutor admin</p>
     <h1>Dashboard</h1>
+    <div class="lv-top" id="live">
+      <div class="card lv-kpi"><span class="lv-big" id="lv-active">–</span><span>Active sessions, last 5 min</span></div>
+      <div class="card lv-kpi"><span class="lv-big" id="lv-hour">–</span><span>Visitors in the last hour</span></div>
+    </div>
+    <div class="card lv-card">
+      <div class="lv-head"><h2>On the site now</h2><span class="small muted"><span class="lv-pulse"></span><span id="lv-updated">Loading…</span></span></div>
+      <div class="table-wrap"><table class="lv-table">
+        <thead><tr><th>Where</th><th>Current page</th><th>Pages</th><th>Time on site</th><th>Last seen</th></tr></thead>
+        <tbody id="lv-visitors"></tbody>
+      </table></div>
+      <h3 class="lv-h3">Live activity (refreshes every 10 s)</h3>
+      <div class="table-wrap lv-scroll"><table class="lv-table">
+        <thead><tr><th>Time</th><th>Where</th><th>What</th></tr></thead>
+        <tbody id="lv-events"></tbody>
+      </table></div>
+      <p class="small muted">Last hour of activity. Your own visits and bots aren't shown. Location is approximate (city level, from the hosting provider); no IP addresses are stored, and activity is deleted after 48 hours.</p>
+      <noscript><p class="small">Turn on JavaScript to see live activity.</p></noscript>
+    </div>
+    <script src="/admin-live.js" defer></script>
+
     <div class="card" id="visits">
       <div class="visits-head">
         <h2>Site traffic</h2>

@@ -8,6 +8,7 @@
   <meta name="robots" content="<%= seo.robots %>">
 <% if (seo.indexable) { %>  <link rel="canonical" href="<%= seo.canonical %>">
 <% } %>  <meta name="theme-color" content="#0E1F3B">
+  <meta name="csrf-token" content="<%= csrf %>">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/brand/apple-touch-icon.png">
   <link rel="preload" href="/fonts/montserrat-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
